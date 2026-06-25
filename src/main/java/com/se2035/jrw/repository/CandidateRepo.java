@@ -1,4 +1,7 @@
 package com.se2035.jrw.repository;
 
-public interface CandidateRepo {
+import com.se2035.jrw.entity.Candidate;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CandidateRepo extends JpaRepository<Candidate, Integer> {
 }
