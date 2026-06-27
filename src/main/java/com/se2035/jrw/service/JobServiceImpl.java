@@ -118,6 +118,7 @@ public class JobServiceImpl implements JobService{
     }
 
     @Override
+    @Transactional
     public Job closeJob(Integer jobId) {
         Job job = jobRepo.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
@@ -125,5 +126,15 @@ public class JobServiceImpl implements JobService{
         job.setStatus(JobStatus.CLOSED);
 
         return jobRepo.save(job);
+    }
+
+    @Override
+    public List<Job> findByRecruiterId(Integer recruiterId) {
+        Recruiter recruiter = recruiterRepo.findById(recruiterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Recruiter not found"));
+
+        List<Job> jobs = jobRepo.findByRecruiterId(recruiterId);
+
+        return jobs;
     }
 }

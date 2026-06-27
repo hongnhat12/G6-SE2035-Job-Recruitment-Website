@@ -11,4 +11,5 @@ public interface JobService {
     void deleteJob(Integer jobId);
     List<Job> findAll();
     Job closeJob(Integer jobId);
+    List<Job> findByRecruiterId(Integer recruiterId);
 }
