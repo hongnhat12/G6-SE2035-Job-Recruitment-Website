@@ -11,7 +11,7 @@ import java.time.LocalDate;
 public class JobRequest {
     private Integer companyId;
     private Integer recruiterId;
-    private String industry;
+    private Integer industryId;
     private String title;
     private String description;
     private String requirement;
