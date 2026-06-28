@@ -77,24 +77,13 @@ SET IDENTITY_INSERT CV OFF;
 GO
 
 -- =========================
--- INDUSTRY (3 rows)
--- =========================
-SET IDENTITY_INSERT Industry ON;
-INSERT INTO Industry (IndustryID, IndustryName, Description) VALUES
-(1, N'Information Technology', N'Software development, system integration, QA, cloud and tech services.'),
-(2, N'Financial Technology', N'E-wallet, digital banking, payment gateway, and financial platforms.'),
-(3, N'E-commerce', N'Online marketplace, retail networks, and logistics platforms.');
-SET IDENTITY_INSERT Industry OFF;
-GO
-
--- =========================
 -- JOB (10 rows — mix of APPROVED, PENDING, CLOSED)
 -- ApprovedBy = UserID 1 (admin)
 -- =========================
 SET IDENTITY_INSERT Job ON;
-INSERT INTO Job (JobID, CompanyID, RecruiterID, Title, IndustryID, Description, Requirement, Benefit, Location, SalaryMin, SalaryMax, EmploymentType, ExperienceRequired, RequiredSkills, Deadline, Status, ApprovedBy, ApprovedAt, CreatedAt, UpdatedAt) VALUES
+INSERT INTO Job (JobID, CompanyID, RecruiterID, Title, Industry, Description, Requirement, Benefit, Location, SalaryMin, SalaryMax, EmploymentType, ExperienceRequired, RequiredSkills, Deadline, Status, ApprovedBy, ApprovedAt, CreatedAt, UpdatedAt) VALUES
 (1,  1, 1, N'Senior Java Backend Developer',
-    1,
+    N'Information Technology',
     N'Join FPT Software to build scalable microservices for enterprise clients across the US and Japan markets. You will work on high-traffic systems processing millions of requests daily.',
     N'3+ years Java experience. Proficiency with Spring Boot and microservices architecture. Experience with PostgreSQL or MySQL. Knowledge of Docker and Kubernetes is a plus.',
     N'Competitive salary up to $2000/month. 13th month salary. Premium health insurance. Annual team-building trip. Flexible remote work 2 days/week.',
@@ -103,7 +92,7 @@ INSERT INTO Job (JobID, CompanyID, RecruiterID, Title, IndustryID, Description, 
     '2025-07-31', 'APPROVED', 1, '2025-03-10 09:00:00', '2025-03-08 08:00:00', '2025-03-10 09:00:00'),
 
 (2,  1, 1, N'Junior Backend Developer (.NET)',
-    1,
+    N'Information Technology',
     N'Great opportunity for fresh graduates or junior developers to join FPT Software''s growing .NET team. Mentorship provided by senior engineers.',
     N'0-1 year experience. Knowledge of C# and .NET fundamentals. Understanding of RESTful APIs. Eagerness to learn and grow.',
     N'Salary 10-15 million VND. Full social insurance. Training and certification support. Clear promotion roadmap.',
@@ -112,7 +101,7 @@ INSERT INTO Job (JobID, CompanyID, RecruiterID, Title, IndustryID, Description, 
     '2025-08-15', 'APPROVED', 1, '2025-03-11 10:00:00', '2025-03-09 09:00:00', '2025-03-11 10:00:00'),
 
 (3,  2, 2, N'Frontend Developer (React)',
-    1,
+    N'Information Technology',
     N'VNG is looking for a talented React developer to build next-generation features for Zalo Web — Vietnam''s most used messaging platform with 74 million users.',
     N'2+ years React experience. Strong TypeScript skills. Experience with state management (Redux or Zustand). Eye for UI/UX detail.',
     N'Salary up to 30 million VND. Stock options available. World-class tech stack. Free lunch at office. Flexible hours.',
@@ -121,7 +110,7 @@ INSERT INTO Job (JobID, CompanyID, RecruiterID, Title, IndustryID, Description, 
     '2025-07-20', 'APPROVED', 1, '2025-03-12 11:00:00', '2025-03-10 10:00:00', '2025-03-12 11:00:00'),
 
 (4,  2, 2, N'Mobile Developer (iOS)',
-    1,
+    N'Information Technology',
     N'Build native iOS features for ZaloPay, VNG''s fast-growing digital payments app. Work with a cross-functional team of designers and product managers.',
     N'2+ years Swift/Objective-C experience. Deep understanding of iOS SDK and UIKit. Experience with payment or fintech apps preferred.',
     N'Salary 25-40 million VND. Annual performance bonus. MacBook Pro provided. Overseas tech conferences. Premium health insurance.',
@@ -130,7 +119,7 @@ INSERT INTO Job (JobID, CompanyID, RecruiterID, Title, IndustryID, Description, 
     '2025-07-25', 'PENDING', NULL, NULL, '2025-03-15 08:00:00', '2025-03-15 08:00:00'),
 
 (5,  3, 3, N'Backend Developer (Node.js)',
-    2,
+    N'Financial Technology',
     N'MoMo is scaling its payment infrastructure to support 50M users. We need a Node.js developer to build and maintain high-availability financial services.',
     N'2+ years Node.js experience. Understanding of financial systems or payment processing. Experience with event-driven architecture. Redis and MongoDB knowledge preferred.',
     N'Salary 20-35 million VND. Quarterly bonus. Full remote option. Health care for family. 15 days annual leave.',
@@ -139,7 +128,7 @@ INSERT INTO Job (JobID, CompanyID, RecruiterID, Title, IndustryID, Description, 
     '2025-08-01', 'APPROVED', 1, '2025-03-14 14:00:00', '2025-03-12 11:00:00', '2025-03-14 14:00:00'),
 
 (6,  3, 3, N'DevOps Engineer',
-    2,
+    N'Financial Technology',
     N'Join MoMo''s platform team to build and maintain the infrastructure powering Vietnam''s #1 e-wallet. Manage Kubernetes clusters handling millions of transactions per day.',
     N'3+ years DevOps experience. Strong Kubernetes and Docker expertise. Experience with AWS or GCP. CI/CD pipeline management. Terraform or Ansible experience required.',
     N'Salary 30-50 million VND. AWS certification sponsorship. Extra PTO for on-call shifts. Modern office in central HCMC.',
@@ -148,7 +137,7 @@ INSERT INTO Job (JobID, CompanyID, RecruiterID, Title, IndustryID, Description, 
     '2025-07-15', 'APPROVED', 1, '2025-03-13 10:00:00', '2025-03-11 09:00:00', '2025-03-13 10:00:00'),
 
 (7,  4, 4, N'Full Stack Developer (React + Node.js)',
-    3,
+    N'E-commerce',
     N'Tiki is building the future of Vietnamese e-commerce. As a full stack developer you will own features end-to-end — from database schema to pixel-perfect UI.',
     N'3+ years full stack experience with React and Node.js. PostgreSQL proficiency. Experience with microservices. Comfortable with agile and fast-paced environments.',
     N'Salary 25-40 million VND. Tiki vouchers monthly. Hybrid work model. Annual team trip abroad. MacBook Air provided.',
@@ -157,7 +146,7 @@ INSERT INTO Job (JobID, CompanyID, RecruiterID, Title, IndustryID, Description, 
     '2025-08-10', 'APPROVED', 1, '2025-03-16 09:00:00', '2025-03-14 08:00:00', '2025-03-16 09:00:00'),
 
 (8,  4, 4, N'Flutter Mobile Developer',
-    3,
+    N'E-commerce',
     N'Tiki''s mobile app has 10M+ downloads. We are looking for a Flutter expert to lead mobile feature development for our iOS and Android apps.',
     N'2+ years Flutter/Dart experience. Published apps on App Store or Google Play. Experience with Firebase and REST API integration. Strong knowledge of state management (BLoC or Riverpod).',
     N'Salary 22-35 million VND. Flexible hours. Career growth path to Tech Lead. Premium health insurance.',
@@ -166,7 +155,7 @@ INSERT INTO Job (JobID, CompanyID, RecruiterID, Title, IndustryID, Description, 
     '2025-07-30', 'APPROVED', 1, '2025-03-17 11:00:00', '2025-03-15 10:00:00', '2025-03-17 11:00:00'),
 
 (9,  1, 1, N'Data Engineer',
-    1,
+    N'Information Technology',
     N'FPT Software is expanding its data engineering practice. Help clients build modern data lakehouse architectures on AWS and Azure.',
     N'2+ years data engineering experience. Proficiency with Apache Spark and Airflow. SQL expertise. Experience with dbt or similar transformation tools. Python required.',
     N'Salary 20-38 million VND. Remote-friendly. International project exposure. Annual salary review.',
@@ -175,7 +164,7 @@ INSERT INTO Job (JobID, CompanyID, RecruiterID, Title, IndustryID, Description, 
     '2025-06-30', 'CLOSED', 1, '2025-02-01 08:00:00', '2025-01-28 09:00:00', '2025-03-01 08:00:00'),
 
 (10, 2, 2, N'QA Engineer (Automation)',
-    1,
+    N'Information Technology',
     N'VNG needs a QA Automation engineer to build and maintain test frameworks for Zalo backend services. Own quality for features used by 74M Vietnamese users.',
     N'2+ years automation testing experience. Selenium or Playwright proficiency. API testing with Postman or RestAssured. Basic CI/CD knowledge.',
     N'Salary 18-28 million VND. Flexible working hours. Quarterly performance bonus. Free parking.',

@@ -33,10 +33,10 @@ public class Job {
     @JoinColumn(name = "RecruiterID", nullable = false)
     private Recruiter recruiter;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "IndustryID", nullable = false)
-    private Industry industry;
-
+    // Replaces the Industry lookup table + CompanyIndustry junction.
+    // Use a controlled value in the service layer (e.g. validate against an enum or constant list).
+    @Column(name = "Industry", length = 100)
+    private String industry;
 
     @Column(name = "Title", nullable = false, length = 200)
     private String title;

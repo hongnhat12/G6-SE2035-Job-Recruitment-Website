@@ -10,9 +10,7 @@ import com.se2035.jrw.enums.UserRole;
 import com.se2035.jrw.enums.UserStatus;
 import com.se2035.jrw.exception.BadRequestException;
 import com.se2035.jrw.exception.ResourceNotFoundException;
-import com.se2035.jrw.entity.Industry;
 import com.se2035.jrw.repository.CompanyRepo;
-import com.se2035.jrw.repository.IndustryRepo;
 import com.se2035.jrw.repository.JobRepo;
 import com.se2035.jrw.repository.RecruiterRepo;
 import com.se2035.jrw.repository.UserRepo;
@@ -30,7 +28,6 @@ public class JobServiceImpl implements JobService{
     private final CompanyRepo companyRepo;
     private final RecruiterRepo recruiterRepo;
     private final UserRepo userRepo;
-    private final IndustryRepo industryRepo;
 
     @Override
     @Transactional
@@ -45,8 +42,6 @@ public class JobServiceImpl implements JobService{
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
         Recruiter recruiter = recruiterRepo.findById(req.getRecruiterId())
                 .orElseThrow(() -> new ResourceNotFoundException("Recruiter not found"));
-        Industry industry = industryRepo.findById(req.getIndustryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Industry not found"));
 
         if(!recruiter.getCompany().getCompanyId().equals(company.getCompanyId())) {
             throw new BadRequestException("Recruiter must belong to company");
@@ -59,7 +54,7 @@ public class JobServiceImpl implements JobService{
         Job job = Job.builder()
                 .company(company)
                 .recruiter(recruiter)
-                .industry(industry)
+                .industry(req.getIndustry())
                 .title(req.getTitle())
                 .description(req.getDescription())
                 .requirement(req.getRequirement())
@@ -91,11 +86,9 @@ public class JobServiceImpl implements JobService{
                 && req.getSalaryMin().compareTo(req.getSalaryMax()) > 0) {
             throw new BadRequestException("Salary min > max");
         }
-        Industry industry = industryRepo.findById(req.getIndustryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Industry not found"));
 
         job.setTitle(req.getTitle());
-        job.setIndustry(industry);
+        job.setIndustry(req.getIndustry());
         job.setDescription(req.getDescription());
         job.setRequirement(req.getRequirement());
         job.setBenefit(req.getBenefit());
