@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: head('Verify Email')}"></head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+
+<nav th:replace="~{fragments :: navbar}"></nav>
+
+<main class="auth-page flex-grow">
+    <section class="auth-shell single-auth-shell">
+        <section class="auth-card auth-card-wide">
+            <div class="auth-card-header">
+                <div class="auth-icon">
+                    <i class="fa-solid fa-envelope-circle-check"></i>
+                </div>
+                <h2>Verify your email</h2>
+                <p class="auth-subtitle" th:text="${message}">
+                    Account created successfully. Please verify your email before logging in.
+                </p>
+            </div>
+
+            <div th:if="${error}" class="auth-alert auth-alert-error mb-5">
+                <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                <span th:text="${error}">Could not send verification email.</span>
+            </div>
+
+            <div class="auth-alert auth-alert-success mb-5">
+                <i class="fa-solid fa-circle-check mt-0.5"></i>
+                <span>
+                    Verification instructions were created for
+                    <strong th:text="${email}">example@email.com</strong>.
+                    Please check your inbox and spam folder.
+                </span>
+            </div>
+
+            <div th:if="${verificationLink}" class="verification-box">
+                <p class="auth-note mb-2">
+                    Demo/fallback mode: use this link directly because SMTP sending is disabled or failed.
+                </p>
+                <a th:href="${verificationLink}" th:text="${verificationLink}" class="verification-link">
+                    http://localhost:8080/verify-email?token=sample
+                </a>
+            </div>
+
+            <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                <a th:href="@{/login}" class="auth-btn text-center">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    Go to Login
+                </a>
+                <a th:href="@{/register}" class="auth-btn-outline text-center">
+                    Create another account
+                </a>
+            </div>
+        </section>
+    </section>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+
+</body>
+</html>
