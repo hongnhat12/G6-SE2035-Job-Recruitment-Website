@@ -240,6 +240,10 @@ body {
     border-color: var(--primary);
     color: var(--primary);
 }
+.pagination .page-item.disabled .page-link {
+    pointer-events: none;
+    opacity: .5;
+}
 
 /* ── Flash toast ─────────────────────────────── */
 .flash-toast {
