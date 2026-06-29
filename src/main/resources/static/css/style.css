@@ -1,0 +1,311 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --primary:       #2563EB;
+    --primary-dark:  #1d4ed8;
+    --primary-light: #EFF6FF;
+    --success:       #059669;
+    --warning:       #d97706;
+    --danger:        #dc2626;
+    --slate-50:      #f8fafc;
+    --slate-100:     #f1f5f9;
+    --slate-200:     #e2e8f0;
+    --slate-500:     #64748b;
+    --slate-700:     #334155;
+    --slate-900:     #0f172a;
+    --card-radius:   14px;
+}
+
+/* ── Base ────────────────────────────────────── */
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--slate-100);
+    color: var(--slate-700);
+}
+
+/* ── Navbar ──────────────────────────────────── */
+.navbar {
+    box-shadow: 0 1px 0 var(--slate-200);
+    z-index: 1030;
+}
+.navbar-brand {
+    font-weight: 800;
+    font-size: 1.35rem;
+    color: var(--primary) !important;
+    letter-spacing: -0.5px;
+}
+.navbar-brand i { margin-right: 6px; }
+.nav-link {
+    font-weight: 500;
+    color: var(--slate-700) !important;
+    transition: color 0.15s;
+}
+.nav-link:hover { color: var(--primary) !important; }
+
+/* ── Hero ────────────────────────────────────── */
+.hero-section {
+    background: linear-gradient(135deg, #1e40af 0%, #4f46e5 60%, #7c3aed 100%);
+    padding: 72px 0 80px;
+}
+.hero-section h1 { letter-spacing: -1px; }
+
+/* ── Search form (hero) ──────────────────────── */
+.search-form-hero {
+    background: #fff;
+    border-radius: 16px;
+    padding: 6px 6px 6px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 16px 48px rgba(0,0,0,.18);
+}
+.search-form-hero .form-control,
+.search-form-hero .form-select {
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 0.95rem;
+}
+.search-form-hero .divider {
+    width: 1px;
+    height: 28px;
+    background: var(--slate-200);
+    flex-shrink: 0;
+}
+
+/* ── Job Card ────────────────────────────────── */
+.job-card {
+    background: #fff;
+    border: 1.5px solid var(--slate-200);
+    border-radius: var(--card-radius);
+    padding: 22px;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.job-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 8px 32px rgba(37,99,235,.13);
+    transform: translateY(-3px);
+}
+.job-card-link { text-decoration: none; display: block; }
+
+/* ── Company avatar ──────────────────────────── */
+.company-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+.company-avatar-lg {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    font-size: 2rem;
+}
+.company-avatar-sm {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+}
+
+/* ── Pill badges ─────────────────────────────── */
+.pill-type {
+    display: inline-flex;
+    align-items: center;
+    background: #f0fdf4;
+    color: #166534;
+    font-size: 0.77rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.pill-salary {
+    display: inline-flex;
+    align-items: center;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 4px 11px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.pill-tag {
+    display: inline-flex;
+    align-items: center;
+    background: var(--slate-100);
+    color: var(--slate-700);
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* ── Application status badges ───────────────── */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.status-PENDING    { background: #fef3c7; color: #92400e; }
+.status-SHORTLISTED{ background: #dbeafe; color: #1e40af; }
+.status-HIRED      { background: #d1fae5; color: #065f46; }
+.status-REJECTED   { background: #fee2e2; color: #991b1b; }
+.status-WITHDRAWN  { background: var(--slate-100); color: var(--slate-500); }
+
+/* ── Filter sidebar ──────────────────────────── */
+.filter-card {
+    background: #fff;
+    border: 1.5px solid var(--slate-200);
+    border-radius: var(--card-radius);
+    padding: 22px;
+    position: sticky;
+    top: 76px;
+}
+.filter-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: var(--slate-500);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+/* ── Apply/detail side card ──────────────────── */
+.side-card {
+    background: #fff;
+    border: 1.5px solid var(--slate-200);
+    border-radius: var(--card-radius);
+    padding: 24px;
+    position: sticky;
+    top: 76px;
+}
+
+/* ── Section title ───────────────────────────── */
+.section-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--slate-900);
+    letter-spacing: -0.5px;
+}
+
+/* ── Stats bar ───────────────────────────────── */
+.stat-number {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: -1px;
+}
+
+/* ── Empty state ─────────────────────────────── */
+.empty-state {
+    text-align: center;
+    padding: 72px 24px;
+    color: var(--slate-500);
+}
+.empty-state .empty-icon {
+    font-size: 3.5rem;
+    color: var(--slate-200);
+    margin-bottom: 16px;
+}
+
+/* ── Pagination ──────────────────────────────── */
+.pagination .page-link {
+    border-radius: 8px !important;
+    margin: 0 2px;
+    border: 1.5px solid var(--slate-200);
+    color: var(--slate-700);
+    font-weight: 500;
+    padding: 6px 12px;
+}
+.pagination .page-item.active .page-link {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+.pagination .page-link:hover:not(.page-item.active .page-link) {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* ── Flash toast ─────────────────────────────── */
+.flash-toast {
+    position: fixed;
+    top: 76px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.14);
+    animation: slideInRight .25s ease;
+}
+@keyframes slideInRight {
+    from { transform: translateX(110%); opacity: 0; }
+    to   { transform: translateX(0);   opacity: 1; }
+}
+
+/* ── Quick tag filter chips (hero) ───────────── */
+.quick-chip {
+    background: rgba(255,255,255,.18);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 4px 14px;
+    text-decoration: none;
+    transition: background .15s;
+}
+.quick-chip:hover {
+    background: rgba(255,255,255,.32);
+    color: #fff;
+}
+
+/* ── Detail content prose ────────────────────── */
+.prose-content {
+    white-space: pre-line;
+    line-height: 1.8;
+    color: var(--slate-700);
+}
+
+/* ── Info stat box ───────────────────────────── */
+.info-box {
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+}
+.info-box .info-value {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--slate-900);
+}
+.info-box .info-label {
+    font-size: 0.75rem;
+    color: var(--slate-500);
+    margin-top: 2px;
+}
+
+/* ── Utility ─────────────────────────────────── */
+.min-w-0 { min-width: 0; }
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.hover-primary:hover { color: var(--primary) !important; }
