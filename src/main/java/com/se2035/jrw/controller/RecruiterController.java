@@ -41,7 +41,7 @@ public class RecruiterController {
         try {
             Recruiter recruiter = getCurrentRecruiter(auth);
             List<Job> myJobs = jobRepo.findAll().stream()
-                    .filter(j -> j.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId()) 
+                    .filter(j -> j.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())
                               && j.getStatus() != JobStatus.DELETED)
                     .toList();
             model.addAttribute("jobs", myJobs);
@@ -82,7 +82,7 @@ public class RecruiterController {
                     .orElseThrow(() -> new IllegalArgumentException("Invalid industry"));
             job.setIndustry(ind);
 
-            if (job.getSalaryMin() != null && job.getSalaryMax() != null 
+            if (job.getSalaryMin() != null && job.getSalaryMax() != null
                     && job.getSalaryMin().compareTo(job.getSalaryMax()) > 0) {
                 model.addAttribute("errorMessage", "Salary Min must be less than or equal to Salary Max");
                 model.addAttribute("industries", industryRepo.findAll());
@@ -138,7 +138,7 @@ public class RecruiterController {
             Industry ind = industryRepo.findById(industryId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid industry"));
 
-            if (jobForm.getSalaryMin() != null && jobForm.getSalaryMax() != null 
+            if (jobForm.getSalaryMin() != null && jobForm.getSalaryMax() != null
                     && jobForm.getSalaryMin().compareTo(jobForm.getSalaryMax()) > 0) {
                 model.addAttribute("errorMessage", "Salary Min must be less than or equal to Salary Max");
                 model.addAttribute("industries", industryRepo.findAll());
@@ -157,7 +157,7 @@ public class RecruiterController {
             job.setExperienceRequired(jobForm.getExperienceRequired());
             job.setRequiredSkills(jobForm.getRequiredSkills());
             job.setDeadline(jobForm.getDeadline());
-            
+
             job.setStatus(JobStatus.PENDING);
             jobRepo.save(job);
 
