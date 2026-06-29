@@ -17,6 +17,8 @@ import com.se2035.jrw.repository.JobRepo;
 import com.se2035.jrw.repository.RecruiterRepo;
 import com.se2035.jrw.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -131,6 +133,46 @@ public class JobServiceImpl implements JobService{
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
 
         job.setStatus(JobStatus.CLOSED);
+
+        return jobRepo.save(job);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Job> findPendingJobs(Pageable pageable) {
+        return jobRepo.findByStatus(JobStatus.PENDING, pageable);
+    }
+
+    @Override
+    @Transactional
+    public Job approveJob(Integer jobId, User adminUser) {
+        Job job = jobRepo.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+
+        if (job.getStatus() != JobStatus.PENDING) {
+            throw new BadRequestException("Only jobs with PENDING status can be approved");
+        }
+
+        job.setStatus(JobStatus.APPROVED);
+        job.setApprovedBy(adminUser);
+        job.setApprovedAt(LocalDateTime.now());
+
+        return jobRepo.save(job);
+    }
+
+    @Override
+    @Transactional
+    public Job rejectJob(Integer jobId, User adminUser) {
+        Job job = jobRepo.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+
+        if (job.getStatus() != JobStatus.PENDING) {
+            throw new BadRequestException("Only jobs with PENDING status can be rejected");
+        }
+
+        job.setStatus(JobStatus.REJECTED);
+        job.setApprovedBy(adminUser);
+        job.setApprovedAt(LocalDateTime.now());
 
         return jobRepo.save(job);
     }

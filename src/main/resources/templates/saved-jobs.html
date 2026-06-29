@@ -36,7 +36,7 @@
                 <div class="flex flex-wrap gap-2 mb-4 mt-auto">
                     <span class="flex items-center text-gray-500 text-sm bg-gray-50 px-3 py-1 rounded-lg" th:text="${saved.job.location}">Location</span>
                     <span class="flex items-center text-green-600 text-sm bg-green-50 px-3 py-1 rounded-lg font-medium"
-                          th:text="${(saved.job.salaryMin != null ? (saved.job.salaryMin.longValue() / 1000000) : '0') + 'M - ' + (saved.job.salaryMax != null ? (saved.job.salaryMax.longValue() / 1000000) : '0') + 'M'}">
+                          th:text="${(saved.job.salaryMin != null ? (saved.job.salaryMin.longValue() / 1000) : '0') + 'k - ' + (saved.job.salaryMax != null ? (saved.job.salaryMax.longValue() / 1000) : '0') + 'k'}">
                         Salary
                     </span>
                 </div>

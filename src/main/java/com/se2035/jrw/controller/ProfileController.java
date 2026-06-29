@@ -23,8 +23,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProfileController {
 
-    private final UserRepository userRepository;
-    private final CandidateRepository candidateRepository;
+    private final UserRepo userRepo;
+    private final CandidateRepo candidateRepo;
     private final RecruiterRepo recruiterRepo;
     private final CompanyRepo companyRepo;
     private final CVRepo cvRepo;
@@ -33,10 +33,10 @@ public class ProfileController {
 
     private User getCurrentUser(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) {
-            throw new IllegalStateException("Bạn chưa đăng nhập");
+            throw new IllegalStateException("You are not logged in");
         }
-        return userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new IllegalStateException("Không tìm thấy người dùng"));
+        return userRepo.findByEmail(auth.getName())
+                .orElseThrow(() -> new IllegalStateException("User not found"));
     }
 
     @GetMapping
@@ -44,14 +44,14 @@ public class ProfileController {
         try {
             User user = getCurrentUser(auth);
             if (user.getRole() == UserRole.CANDIDATE) {
-                Candidate candidate = candidateRepository.findByUser_UserId(user.getUserId())
-                        .orElseThrow(() -> new IllegalStateException("Không tìm thấy hồ sơ ứng viên"));
+                Candidate candidate = candidateRepo.findByUser_UserId(user.getUserId())
+                        .orElseThrow(() -> new IllegalStateException("Candidate profile not found"));
                 model.addAttribute("profile", candidate);
                 model.addAttribute("cvList", candidate.getCvList());
                 return "profile/seeker";
             } else if (user.getRole() == UserRole.RECRUITER) {
                 Recruiter recruiter = recruiterRepo.findByUser_UserId(user.getUserId())
-                        .orElseThrow(() -> new IllegalStateException("Không tìm thấy hồ sơ nhà tuyển dụng"));
+                        .orElseThrow(() -> new IllegalStateException("Recruiter profile not found"));
                 model.addAttribute("profile", recruiter);
                 model.addAttribute("companies", companyRepo.findAll());
                 return "profile/recruiter";
@@ -76,8 +76,8 @@ public class ProfileController {
 
         try {
             User user = getCurrentUser(auth);
-            Candidate candidate = candidateRepository.findByUser_UserId(user.getUserId())
-                    .orElseThrow(() -> new IllegalStateException("Không tìm thấy hồ sơ"));
+            Candidate candidate = candidateRepo.findByUser_UserId(user.getUserId())
+                    .orElseThrow(() -> new IllegalStateException("Profile not found"));
 
             candidate.setFullName(fullName);
             candidate.setPhone(phone);
@@ -86,11 +86,10 @@ public class ProfileController {
             candidate.setSkills(skills);
             candidate.setAddress(address);
 
-            candidateRepository.save(candidate);
+            candidateRepo.save(candidate);
 
             if (cvFile != null && !cvFile.isEmpty()) {
                 String uploadedPath = fileStorageService.uploadFile(cvFile, "cvs");
-                // Reset defaults
                 candidate.getCvList().forEach(c -> {
                     c.setIsDefault(false);
                     cvRepo.save(c);
@@ -105,9 +104,9 @@ public class ProfileController {
                 cvRepo.save(newCv);
             }
 
-            redirectAttributes.addFlashAttribute("success", "Cập nhật hồ sơ thành công!");
+            redirectAttributes.addFlashAttribute("success", "Profile updated successfully!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
         }
         return "redirect:/profile";
     }
@@ -129,16 +128,15 @@ public class ProfileController {
         try {
             User user = getCurrentUser(auth);
             Recruiter recruiter = recruiterRepo.findByUser_UserId(user.getUserId())
-                    .orElseThrow(() -> new IllegalStateException("Không tìm thấy hồ sơ"));
+                    .orElseThrow(() -> new IllegalStateException("Profile not found"));
 
             recruiter.setFullName(fullName);
             recruiter.setPhone(phone);
             recruiter.setPosition(position);
 
             Company company = companyRepo.findById(companyId)
-                    .orElseThrow(() -> new IllegalArgumentException("Công ty không hợp lệ"));
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid company"));
             
-            // If they are updating their company name, website, address etc.
             if (companyName != null && !companyName.trim().isEmpty()) {
                 company.setCompanyName(companyName.trim());
             }
@@ -161,9 +159,9 @@ public class ProfileController {
             recruiter.setCompany(company);
             recruiterRepo.save(recruiter);
 
-            redirectAttributes.addFlashAttribute("success", "Cập nhật hồ sơ thành công!");
+            redirectAttributes.addFlashAttribute("success", "Profile updated successfully!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
         }
         return "redirect:/profile";
     }
@@ -180,26 +178,26 @@ public class ProfileController {
             User user = getCurrentUser(auth);
 
             if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-                redirectAttributes.addFlashAttribute("error", "Mật khẩu hiện tại không chính xác!");
+                redirectAttributes.addFlashAttribute("error", "Current password is incorrect!");
                 return "redirect:/profile#change-password";
             }
 
             if (newPassword == null || newPassword.length() < 6) {
-                redirectAttributes.addFlashAttribute("error", "Mật khẩu mới phải có ít nhất 6 ký tự!");
+                redirectAttributes.addFlashAttribute("error", "New password must be at least 6 characters!");
                 return "redirect:/profile#change-password";
             }
 
             if (!newPassword.equals(confirmPassword)) {
-                redirectAttributes.addFlashAttribute("error", "Mật khẩu xác nhận không khớp!");
+                redirectAttributes.addFlashAttribute("error", "Confirm password does not match!");
                 return "redirect:/profile#change-password";
             }
 
             user.setPasswordHash(passwordEncoder.encode(newPassword));
-            userRepository.save(user);
+            userRepo.save(user);
 
-            redirectAttributes.addFlashAttribute("success", "Đổi mật khẩu thành công!");
+            redirectAttributes.addFlashAttribute("success", "Password changed successfully!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
         }
         return "redirect:/profile";
     }

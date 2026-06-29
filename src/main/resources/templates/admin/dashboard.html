@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <th:block th:replace="~{fragments :: head('Admin Dashboard')}"></th:block>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+
+<nav th:replace="~{fragments :: navbar}"></nav>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <aside class="col-span-1">
+            <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                <div class="bg-teal-600 text-white py-4 px-6">
+                    <h3 class="font-bold flex items-center text-sm">
+                        <i class="fa-solid fa-gauge mr-2"></i> Admin Control
+                    </h3>
+                </div>
+                <div class="divide-y divide-gray-50">
+                    <a th:href="@{/admin/dashboard}" class="block py-4 px-6 text-sm font-bold text-teal-600 bg-teal-50 flex items-center">
+                        <i class="fa-solid fa-chart-pie mr-3 text-teal-600"></i> Dashboard
+                    </a>
+                    <a th:href="@{/admin/companies}" class="block py-4 px-6 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center transition">
+                        <i class="fa-solid fa-building mr-3 text-gray-400"></i> Companies
+                    </a>
+                    <a th:href="@{/admin/industries}" class="block py-4 px-6 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center transition">
+                        <i class="fa-solid fa-tags mr-3 text-gray-400"></i> Industries
+                    </a>
+                    <a th:href="@{/admin/jobs/pending}" class="block py-4 px-6 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center transition">
+                        <i class="fa-solid fa-circle-check mr-3 text-gray-400"></i> Job Approvals
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <div class="col-span-1 lg:col-span-3 space-y-8">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900">System Overview</h1>
+                <p class="text-gray-500 mt-1">Real-time statistics and analysis of the platform</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                <div class="bg-teal-600 text-white p-6 rounded-2xl shadow-md">
+                    <p class="text-teal-100 text-sm font-medium">Total Users</p>
+                    <p class="text-4xl font-extrabold mt-2" th:text="${totalUsers}">0</p>
+                </div>
+                <div class="bg-green-600 text-white p-6 rounded-2xl shadow-md">
+                    <p class="text-green-100 text-sm font-medium">Active Jobs</p>
+                    <p class="text-4xl font-extrabold mt-2" th:text="${totalJobs}">0</p>
+                </div>
+                <div class="bg-amber-500 text-white p-6 rounded-2xl shadow-md">
+                    <p class="text-amber-100 text-sm font-medium">Pending Approvals</p>
+                    <p class="text-4xl font-extrabold mt-2" th:text="${pendingJobsCount}">0</p>
+                </div>
+                <div class="bg-purple-600 text-white p-6 rounded-2xl shadow-md">
+                    <p class="text-purple-100 text-sm font-medium">Total Applications</p>
+                    <p class="text-4xl font-extrabold mt-2" th:text="${totalApplications}">0</p>
+                </div>
+                <div class="bg-orange-500 text-white p-6 rounded-2xl shadow-md">
+                    <p class="text-orange-100 text-sm font-medium">Registered Companies</p>
+                    <p class="text-4xl font-extrabold mt-2" th:text="${totalCompanies}">0</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-center">
+                    <p class="text-gray-500 text-sm mb-1">Average Salary Max</p>
+                    <p class="text-2xl font-extrabold text-teal-600" th:text="${#numbers.formatDecimal(avgSalary / 1000.0, 1, 1) + 'k'}">0k</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-center">
+                    <p class="text-gray-500 text-sm mb-1">Highest Salary Max</p>
+                    <p class="text-2xl font-extrabold text-green-600" th:text="${#numbers.formatDecimal(maxSalary / 1000.0, 1, 1) + 'k'}">0k</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm text-center">
+                    <p class="text-gray-500 text-sm mb-1">Lowest Salary Min</p>
+                    <p class="text-2xl font-extrabold text-orange-500" th:text="${#numbers.formatDecimal(minSalary / 1000.0, 1, 1) + 'k'}">0k</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Jobs by Industry</h3>
+                    <div class="h-72 relative">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Applications by Status</h3>
+                    <div class="h-72 relative">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Users by Role</h3>
+                    <div class="h-72 relative">
+                        <canvas id="roleChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Employment Types</h3>
+                    <div class="h-72 relative">
+                        <canvas id="typeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-gray-900">Recent Pending Approvals</h3>
+                    <a th:href="@{/admin/jobs/pending}" class="text-sm font-bold text-teal-600 hover:text-teal-700 transition">View All</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-100 text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Job Title</th>
+                                <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Company</th>
+                                <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Salary</th>
+                                <th class="px-6 py-3.5 text-center font-semibold text-gray-600">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            <tr th:each="job : ${pendingJobs}" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-semibold text-gray-900" th:text="${job.title}">Title</td>
+                                <td class="px-6 py-4 text-gray-500" th:text="${job.company.companyName}">Company</td>
+                                <td class="px-6 py-4 text-gray-500" th:text="${job.salaryMin.longValue() / 1000} + ' - ' + ${job.salaryMax.longValue() / 1000} + 'k'">Salary</td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap">
+                                    <a th:href="@{/jobs/{id}(id=${job.jobId})}" target="_blank" class="text-teal-600 hover:text-teal-700 font-bold">Review</a>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(pendingJobs)}">
+                                <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                                    <i class="fa-solid fa-inbox text-2xl mb-2 block"></i>
+                                    No pending job postings
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const jobsByCategory = /*[[${jobsByCategory}]]*/ {};
+    const jobsByType = /*[[${jobsByType}]]*/ {};
+    const applicationsByStatus = /*[[${applicationsByStatus}]]*/ {};
+    const usersByRole = /*[[${usersByRole}]]*/ {};
+    /*]]>*/
+
+    const defaultColors = ['#14B8A6', '#3B82F6', '#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#EF4444'];
+
+    function makeChart(id, type, labels, data, colors) {
+        new Chart(document.getElementById(id), {
+            type: type,
+            data: { 
+                labels: labels, 
+                datasets: [{ 
+                    label: 'Count', 
+                    data: data, 
+                    backgroundColor: colors || defaultColors, 
+                    borderWidth: 0 
+                }] 
+            },
+            options: { 
+                plugins: { 
+                    legend: { 
+                        display: type !== 'bar', 
+                        position: 'bottom' 
+                    } 
+                }, 
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    makeChart('categoryChart', 'bar', Object.keys(jobsByCategory), Object.values(jobsByCategory), ['#14B8A6']);
+    makeChart('statusChart', 'doughnut', Object.keys(applicationsByStatus), Object.values(applicationsByStatus), ['#3B82F6', '#F59E0B', '#10B981', '#EF4444']);
+    makeChart('roleChart', 'pie', Object.keys(usersByRole), Object.values(usersByRole), ['#6366F1', '#10B981', '#F59E0B']);
+    makeChart('typeChart', 'bar', Object.keys(jobsByType), Object.values(jobsByType), ['#6366F1']);
+</script>
+
+</body>
+</html>

@@ -6,10 +6,10 @@ import com.se2035.jrw.entity.Recruiter;
 import com.se2035.jrw.entity.User;
 import com.se2035.jrw.enums.UserRole;
 import com.se2035.jrw.enums.UserStatus;
-import com.se2035.jrw.repository.CandidateRepository;
+import com.se2035.jrw.repository.CandidateRepo;
 import com.se2035.jrw.repository.CompanyRepo;
 import com.se2035.jrw.repository.RecruiterRepo;
-import com.se2035.jrw.repository.UserRepository;
+import com.se2035.jrw.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -24,8 +24,8 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final CandidateRepository candidateRepository;
+    private final UserRepo userRepo;
+    private final CandidateRepo candidateRepo;
     private final RecruiterRepo recruiterRepo;
     private final CompanyRepo companyRepo;
     private final PasswordEncoder passwordEncoder;
@@ -55,27 +55,25 @@ public class AuthController {
             @RequestParam String phone,
             Model model) {
 
-        // Validate phone: must be exactly 10 digits
         if (phone == null || !phone.matches("\\d{10}")) {
-            model.addAttribute("error", "Số điện thoại phải có đúng 10 chữ số!");
+            model.addAttribute("error", "Phone number must be exactly 10 digits!");
             return "register";
         }
 
-        if (userRepository.findByEmail(email).isPresent()) {
-            model.addAttribute("error", "Email này đã được sử dụng!");
+        if (userRepo.findByEmail(email).isPresent()) {
+            model.addAttribute("error", "This email is already in use!");
             return "register";
         }
 
         UserRole userRole;
         try {
-            // Map seeker to CANDIDATE
             if ("JOBSEEKER".equalsIgnoreCase(role)) {
                 userRole = UserRole.CANDIDATE;
             } else {
                 userRole = UserRole.valueOf(role.toUpperCase());
             }
         } catch (Exception e) {
-            model.addAttribute("error", "Vai trò không hợp lệ!");
+            model.addAttribute("error", "Invalid role!");
             return "register";
         }
 
@@ -86,7 +84,7 @@ public class AuthController {
                 .status(UserStatus.ACTIVE)
                 .build();
 
-        user = userRepository.save(user);
+        user = userRepo.save(user);
 
         if (userRole == UserRole.CANDIDATE) {
             Candidate candidate = Candidate.builder()
@@ -94,14 +92,12 @@ public class AuthController {
                     .fullName(fullName)
                     .phone(phone)
                     .build();
-            candidateRepository.save(candidate);
+            candidateRepo.save(candidate);
         } else if (userRole == UserRole.RECRUITER) {
-            // Associate with a default company seeded in the DB
             Company defaultCompany = companyRepo.findAll().stream().findFirst().orElse(null);
             if (defaultCompany == null) {
-                // Create a temporary one if none exists
                 defaultCompany = Company.builder()
-                        .companyName("Chưa cập nhật")
+                        .companyName("Not updated")
                         .status("ACTIVE")
                         .build();
                 defaultCompany = companyRepo.save(defaultCompany);
