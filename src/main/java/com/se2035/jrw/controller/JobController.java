@@ -1,22 +1,156 @@
 package com.se2035.jrw.controller;
 
-import com.se2035.jrw.service.JobService;
+import com.se2035.jrw.config.SecurityUtils;
+import com.se2035.jrw.entity.Candidate;
+import com.se2035.jrw.entity.Job;
+import com.se2035.jrw.enums.JobStatus;
+import com.se2035.jrw.repository.CandidateRepository;
+import com.se2035.jrw.repository.JobRepository;
+import com.se2035.jrw.repository.UserRepository;
+import com.se2035.jrw.service.ApplicationService;
+import com.se2035.jrw.service.SavedJobService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-@RestController
+import java.util.List;
+import java.util.Optional;
+
+@Controller
 @RequestMapping("/jobs")
 @RequiredArgsConstructor
 public class JobController {
-    private final JobService jobService;
 
-    @PostMapping
-    public String createJob() {
-        return "job/list";
+    private final JobRepository jobRepository;
+    private final SavedJobService savedJobService;
+    private final ApplicationService applicationService;
+    private final SecurityUtils securityUtils;
+    private final UserRepository userRepository;
+    private final CandidateRepository candidateRepository;
+
+    @GetMapping
+    public String listJobs(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String employmentType,
+            @RequestParam(required = false) String industry,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "9") int size,
+            Model model) {
+
+        // Use searchApprovedJobs from JobRepository
+        Page<Job> jobPage = jobRepository.searchApprovedJobs(
+                (keyword == null || keyword.trim().isEmpty()) ? null : keyword.trim(),
+                (location == null || location.trim().isEmpty()) ? null : location.trim(),
+                (employmentType == null || employmentType.trim().isEmpty()) ? null : employmentType.trim(),
+                (industry == null || industry.trim().isEmpty()) ? null : industry.trim(),
+                PageRequest.of(page, size)
+        );
+
+        model.addAttribute("jobs", jobPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", jobPage.getTotalPages());
+        model.addAttribute("totalElements", jobPage.getTotalElements());
+
+        // Dropdown filters lists
+        model.addAttribute("locations", jobRepository.findDistinctLocations());
+        model.addAttribute("employmentTypes", jobRepository.findDistinctEmploymentTypes());
+        model.addAttribute("industries", jobRepository.findDistinctIndustries());
+
+        // Preserve filter states in model
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("location", location);
+        model.addAttribute("employmentType", employmentType);
+        model.addAttribute("industry", industry);
+
+        return "job-list";
     }
 
-    @GetMapping()
-    public String showJobDetail() {
-        return "job/JobDetail";
+    @GetMapping("/{id}")
+    public String showJobDetail(
+            @PathVariable("id") Integer id,
+            Authentication auth,
+            Model model) {
+
+        Job job = jobRepository.findByJobIdAndStatus(id, JobStatus.APPROVED)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tin tuyển dụng hoặc chưa được duyệt"));
+
+        model.addAttribute("job", job);
+
+        // Fetch similar jobs by same industry (limit to 3)
+        List<Job> similarJobs = jobRepository.searchApprovedJobs(null, null, null, 
+                job.getIndustry() != null ? job.getIndustry().getIndustryName() : null, 
+                PageRequest.of(0, 4))
+                .getContent().stream()
+                .filter(j -> !j.getJobId().equals(id))
+                .limit(3)
+                .toList();
+        model.addAttribute("similarJobs", similarJobs);
+
+        if (auth != null && auth.isAuthenticated()) {
+            String email = auth.getName();
+            userRepository.findByEmail(email).ifPresent(user -> {
+                candidateRepository.findByUser_UserId(user.getUserId()).ifPresent(c -> {
+                    model.addAttribute("hasApplied", applicationService.hasApplied(c.getCandidateId(), id));
+                    model.addAttribute("isSaved", savedJobService.isSaved(c.getCandidateId(), id));
+                    model.addAttribute("cvList", c.getCvList());
+                });
+            });
+        }
+
+        return "job-detail";
+    }
+
+    @PostMapping("/{id}/apply")
+    public String applyJob(
+            @PathVariable("id") Integer id,
+            @RequestParam("cvId") Integer cvId,
+            Authentication auth,
+            RedirectAttributes redirectAttributes) {
+
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        try {
+            Integer candidateId = securityUtils.getCandidateId(auth);
+            applicationService.apply(candidateId, id, cvId);
+            redirectAttributes.addFlashAttribute("success", "Nộp hồ sơ ứng tuyển thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/jobs/" + id;
+    }
+
+    @PostMapping("/{id}/save")
+    public String toggleSaveJob(
+            @PathVariable("id") Integer id,
+            Authentication auth,
+            RedirectAttributes redirectAttributes) {
+
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+
+        try {
+            Integer candidateId = securityUtils.getCandidateId(auth);
+            if (savedJobService.isSaved(candidateId, id)) {
+                savedJobService.unsaveJob(candidateId, id);
+                redirectAttributes.addFlashAttribute("success", "Đã bỏ lưu việc làm.");
+            } else {
+                savedJobService.saveJob(candidateId, id);
+                redirectAttributes.addFlashAttribute("success", "Đã lưu việc làm thành công.");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/jobs/" + id;
     }
 }

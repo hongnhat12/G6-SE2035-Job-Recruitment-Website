@@ -1,249 +1,130 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{fragments :: head('Find Jobs')}"></head>
-<body class="d-flex flex-column min-vh-100">
+<head th:replace="~{fragments :: head('Search Jobs')}"></head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
 
-<div th:replace="~{fragments :: navbar}"></div>
+<nav th:replace="~{fragments :: navbar}"></nav>
 <div th:replace="~{fragments :: flash}"></div>
 
-<!-- ═══ PAGE HEADER ════════════════════════════════════════ -->
-<div class="bg-white border-bottom py-4">
-    <div class="container">
-        <h1 class="h4 fw-bold mb-1">Find Jobs</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0 small">
-                <li class="breadcrumb-item">
-                    <a th:href="@{/}" class="text-decoration-none">Home</a>
-                </li>
-                <li class="breadcrumb-item active">Find Jobs</li>
-            </ol>
-        </nav>
-    </div>
-</div>
-
-<div class="container py-4">
-    <!-- ═══ SEARCH BAR (top) ════════════════════════════════ -->
-    <div class="bg-white border rounded-3 p-3 mb-4 shadow-sm">
-        <form th:action="@{/jobs}" method="get" class="d-flex gap-2">
-            <input type="hidden" name="location"       th:value="${location}">
-            <input type="hidden" name="employmentType" th:value="${employmentType}">
-            <input type="hidden" name="industry"       th:value="${industry}">
-            <div class="input-group flex-grow-1">
-                <span class="input-group-text bg-white border-end-0 text-muted">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" name="keyword" class="form-control border-start-0 ps-0"
-                       placeholder="Job title, skills, company..."
-                       th:value="${keyword}">
-            </div>
-            <button type="submit" class="btn btn-primary fw-semibold px-4 flex-shrink-0">
-                Search
-            </button>
-            <a th:href="@{/jobs}" class="btn btn-outline-secondary flex-shrink-0"
-               th:if="${keyword != null or location != null or employmentType != null or industry != null}">
-                <i class="fa-solid fa-xmark"></i>
-            </a>
-        </form>
+<main class="flex-grow">
+    <div class="bg-gradient-to-br from-teal-600 to-teal-800 py-14">
+        <div class="max-w-7xl mx-auto px-4">
+            <h1 class="text-4xl font-extrabold text-white mb-6 text-center">Search Jobs</h1>
+            
+            <form th:action="@{/jobs}" method="GET" class="max-w-4xl mx-auto bg-white p-3 rounded-2xl shadow-2xl flex gap-3">
+                <input type="text" name="keyword" th:value="${keyword}" placeholder="Position, skills, company..." class="flex-grow px-4 py-3 focus:outline-none text-gray-800 text-sm">
+                <select name="location" class="px-4 py-3 border-l border-gray-100 bg-white text-gray-700 text-sm focus:outline-none">
+                    <option value="">All Locations</option>
+                    <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}" th:selected="${loc == location}"></option>
+                </select>
+                <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-bold px-8 py-3 rounded-xl transition">Search</button>
+            </form>
+        </div>
     </div>
 
-    <div class="row g-4 align-items-start">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Filter Sidebar -->
+            <aside class="lg:w-72 flex-shrink-0">
+                <form th:action="@{/jobs}" method="GET" class="space-y-6 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <input type="hidden" name="keyword" th:value="${keyword}">
+                    <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3">Search Filters</h3>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-3">Industry</label>
+                        <div class="space-y-2 max-h-48 overflow-y-auto">
+                            <label class="flex items-center gap-2 cursor-pointer select-none py-1 px-2 rounded-lg hover:bg-teal-50 transition">
+                                <input type="radio" name="industry" value="" th:checked="${industry == null or industry.isEmpty()}" class="text-teal-600"> <span class="text-sm">All</span>
+                            </label>
+                            <label th:each="ind : ${industries}" class="flex items-center gap-2 cursor-pointer select-none py-1 px-2 rounded-lg hover:bg-teal-50 transition">
+                                <input type="radio" name="industry" th:value="${ind}" th:checked="${ind == industry}" class="text-teal-600"> <span class="text-sm" th:text="${ind}">Industry</span>
+                            </label>
+                        </div>
+                    </div>
 
-        <!-- ═══ FILTER SIDEBAR ══════════════════════════════ -->
-        <div class="col-lg-3">
-            <div class="filter-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h6 class="fw-bold mb-0">
-                        <i class="fa-solid fa-sliders text-primary me-2"></i>Filters
-                    </h6>
-                    <a th:href="@{/jobs(keyword=${keyword})}"
-                       class="small text-muted text-decoration-none hover-primary"
-                       th:if="${location != null or employmentType != null or industry != null}">
-                        Clear filters
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-3">Employment Type</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 cursor-pointer select-none py-1 px-2 rounded-lg hover:bg-teal-50 transition">
+                                <input type="radio" name="employmentType" value="" th:checked="${employmentType == null or employmentType.isEmpty()}" class="text-teal-600"> <span class="text-sm">All</span>
+                            </label>
+                            <label th:each="type : ${employmentTypes}" class="flex items-center gap-2 cursor-pointer select-none py-1 px-2 rounded-lg hover:bg-teal-50 transition">
+                                <input type="radio" name="employmentType" th:value="${type}" th:checked="${type == employmentType}" class="text-teal-600">
+                                <span class="text-sm" th:text="${type}">Type</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Location</label>
+                        <select name="location" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-teal-500">
+                            <option value="">All Locations</option>
+                            <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}" th:selected="${loc == location}"></option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">Apply Filters</button>
+                    <a th:href="@{/jobs}" class="block text-center text-sm text-gray-500 hover:text-teal-600 transition">Clear Filters</a>
+                </form>
+            </aside>
+
+            <!-- Results -->
+            <div class="flex-grow">
+                <div class="flex justify-between items-center mb-6">
+                    <p class="text-gray-600">Found <strong class="text-teal-600" th:text="${totalElements}">0</strong> matching jobs</p>
+                </div>
+
+                <div th:if="${jobs.empty}" class="text-center py-24 bg-white rounded-2xl border border-gray-100">
+                    <svg class="w-24 h-24 mx-auto text-gray-200 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <p class="text-xl font-semibold text-gray-500">No matching results found.</p>
+                </div>
+
+                <div th:unless="${jobs.empty}" class="space-y-4">
+                    <div th:each="job : ${jobs.content}" class="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-lg transition group">
+                        <div class="flex items-start gap-5">
+                            <div class="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center p-2 flex-shrink-0">
+                                <img th:src="${job.company != null and job.company.logo != null ? job.company.logo : 'https://via.placeholder.com/100'}" alt="logo" class="max-w-full max-h-full object-contain">
+                            </div>
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900 group-hover:text-teal-600 transition">
+                                            <a th:href="@{/jobs/{id}(id=${job.jobId})}" th:text="${job.title}">Job Title</a>
+                                        </h3>
+                                        <p class="text-teal-600 font-semibold text-sm" th:text="${job.company?.companyName}">Company</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-green-600 font-bold" th:text="${(job.salaryMin != null ? (job.salaryMin.longValue() / 1000000) : '0') + ' - ' + (job.salaryMax != null ? (job.salaryMax.longValue() / 1000000) : '0') + 'M'}">
+                                            Salary
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <span class="bg-gray-50 text-gray-600 text-xs px-3 py-1 rounded-lg" th:text="${job.location}">Location</span>
+                                    <span class="bg-teal-50 text-teal-600 text-xs font-bold px-3 py-1 rounded-lg uppercase" th:text="${job.employmentType}">Type</span>
+                                    <span th:if="${job.industry != null}" class="bg-purple-50 text-purple-600 text-xs px-3 py-1 rounded-lg" th:text="${job.industry?.industryName}">Industry</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div th:if="${totalPages > 1}" class="flex justify-center mt-10 space-x-2">
+                    <a th:each="p : ${#numbers.sequence(0, totalPages - 1)}"
+                       th:href="@{/jobs(keyword=${keyword},industry=${industry},location=${location},employmentType=${employmentType},page=${p})}"
+                       th:class="${p == currentPage ? 'w-10 h-10 flex items-center justify-center rounded-xl bg-teal-600 text-white font-bold' : 'w-10 h-10 flex items-center justify-center rounded-xl bg-white text-gray-600 border border-gray-200 hover:border-teal-400 hover:text-teal-600'} + ' transition text-sm'"
+                       th:text="${p + 1}">
+                        1
                     </a>
                 </div>
-
-                <form th:action="@{/jobs}" method="get" id="filterForm">
-                    <input type="hidden" name="keyword" th:value="${keyword}">
-
-                    <!-- Location -->
-                    <div class="mb-4">
-                        <p class="filter-label">Location</p>
-                        <select name="location" class="form-select form-select-sm"
-                                onchange="document.getElementById('filterForm').submit()">
-                            <option value="">All locations</option>
-                            <option th:each="loc : ${locations}"
-                                    th:value="${loc}" th:text="${loc}"
-                                    th:selected="${loc == location}"></option>
-                        </select>
-                    </div>
-
-                    <!-- Employment Type -->
-                    <div class="mb-4">
-                        <p class="filter-label">Employment Type</p>
-                        <div class="d-flex flex-column gap-2">
-                            <label th:each="type,s : ${employmentTypes}"
-                                   class="d-flex align-items-center gap-2 small cursor-pointer">
-                                <input class="form-check-input m-0" type="radio"
-                                       name="employmentType"
-                                       th:id="${'et-' + s.index}"
-                                       th:value="${type}"
-                                       th:checked="${type == employmentType}"
-                                       onchange="document.getElementById('filterForm').submit()">
-                                <span th:text="${type}" class="fw-medium"></span>
-                            </label>
-                            <label th:if="${employmentType != null}"
-                                   class="d-flex align-items-center gap-2 small text-muted">
-                                <input class="form-check-input m-0" type="radio"
-                                       name="employmentType" value=""
-                                       onchange="document.getElementById('filterForm').submit()">
-                                <span>All</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Industry -->
-                    <div class="mb-2">
-                        <p class="filter-label">Industry</p>
-                        <select name="industry" class="form-select form-select-sm"
-                                onchange="document.getElementById('filterForm').submit()">
-                            <option value="">All industries</option>
-                            <option th:each="ind : ${industries}"
-                                    th:value="${ind}" th:text="${ind}"
-                                    th:selected="${ind == industry}"></option>
-                        </select>
-                    </div>
-                </form>
             </div>
-        </div>
-
-        <!-- ═══ JOB LIST ════════════════════════════════════ -->
-        <div class="col-lg-9">
-
-            <!-- Result header + active chips -->
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                <div>
-                    <span class="fw-bold text-dark" th:text="${jobs.totalElements}">0</span>
-                    <span class="text-muted"> jobs found</span>
-                    <span th:if="${keyword}" class="text-muted">
-                        for "<strong class="text-dark" th:text="${keyword}"></strong>"
-                    </span>
-                </div>
-                <div class="d-flex flex-wrap gap-2">
-                    <span th:if="${location}" class="badge rounded-pill bg-primary bg-opacity-10 text-primary fw-medium px-3">
-                        <i class="fa-solid fa-location-dot me-1"></i><span th:text="${location}"></span>
-                    </span>
-                    <span th:if="${employmentType}" class="badge rounded-pill bg-success bg-opacity-10 text-success fw-medium px-3">
-                        <span th:text="${employmentType}"></span>
-                    </span>
-                    <span th:if="${industry}" class="badge rounded-pill bg-info bg-opacity-10 text-info fw-medium px-3">
-                        <span th:text="${industry}"></span>
-                    </span>
-                </div>
-            </div>
-
-            <!-- Empty state -->
-            <div th:if="${jobs.empty}" class="empty-state bg-white rounded-4 border">
-                <div class="empty-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
-                <h5 class="fw-bold mt-2">No matching jobs found</h5>
-                <p class="text-muted">Try changing your keywords or search filters</p>
-                <a th:href="@{/jobs}" class="btn btn-primary px-4">Clear filters</a>
-            </div>
-
-            <!-- Job cards -->
-            <div class="d-flex flex-column gap-3" th:unless="${jobs.empty}">
-                <a th:each="job : ${jobs.content}"
-                   th:href="@{/jobs/{id}(id=${job.jobId})}"
-                   class="job-card-link">
-                    <div class="job-card">
-                        <div class="row align-items-center g-3">
-                            <div class="col-auto">
-                                <div class="company-avatar">
-                                    <i class="fa-solid fa-building"></i>
-                                </div>
-                            </div>
-                            <div class="col min-w-0">
-                                <div class="d-flex justify-content-between align-items-start gap-3">
-                                    <div class="min-w-0">
-                                        <h5 class="fw-semibold text-dark mb-1 text-truncate"
-                                            th:text="${job.title}">Job Title</h5>
-                                        <p class="text-muted small mb-2 text-truncate"
-                                           th:text="${job.company?.companyName}">Company</p>
-                                        <div class="d-flex flex-wrap gap-2">
-                                            <span class="pill-type"
-                                                  th:text="${job.employmentType != null ? job.employmentType : 'Full-time'}">
-                                            </span>
-                                            <span th:if="${job.location}" class="pill-tag">
-                                                <i class="fa-solid fa-location-dot me-1"></i>
-                                                <span th:text="${job.location}"></span>
-                                            </span>
-                                            <span th:if="${job.experienceRequired != null}" class="pill-tag">
-                                                <i class="fa-solid fa-star me-1"></i>
-                                                <span th:text="${job.experienceRequired + ' yrs exp'}"></span>
-                                            </span>
-                                            <!-- First 3 skills -->
-                                            <th:block th:if="${job.requiredSkills != null}">
-                                                <span th:each="sk,s : ${#strings.arraySplit(job.requiredSkills,',')}"
-                                                      th:if="${s.index < 3}"
-                                                      class="pill-tag"
-                                                      th:text="${#strings.trim(sk)}">
-                                                </span>
-                                            </th:block>
-                                        </div>
-                                    </div>
-                                    <div class="text-end flex-shrink-0">
-                                        <div class="pill-salary mb-2">
-                                            <i class="fa-solid fa-coins me-1"></i>
-                                            <span th:if="${job.salaryMin != null and job.salaryMax != null}"
-                                                  th:text="${job.salaryMin.longValue()/1000000 + '–' + job.salaryMax.longValue()/1000000 + 'M'}">
-                                            </span>
-                                            <span th:if="${job.salaryMin == null or job.salaryMax == null}">Negotiable</span>
-                                        </div>
-                                        <div th:if="${job.deadline != null}"
-                                             class="small text-warning fw-medium">
-                                            <i class="fa-regular fa-clock me-1"></i>
-                                            <span th:text="${#temporals.format(job.deadline,'dd/MM/yyyy')}"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Pagination -->
-            <nav th:if="${totalPages > 1}" aria-label="Pagination" class="mt-4">
-                <ul class="pagination justify-content-center mb-0">
-                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                        <a class="page-link"
-                           th:href="@{/jobs(keyword=${keyword},location=${location},employmentType=${employmentType},industry=${industry},page=${currentPage-1})}">
-                            <i class="fa-solid fa-chevron-left fa-xs"></i>
-                        </a>
-                    </li>
-                    <li th:each="i : ${#numbers.sequence(0, totalPages-1)}"
-                        class="page-item" th:classappend="${i == currentPage} ? 'active'">
-                        <a class="page-link" th:text="${i+1}"
-                           th:href="@{/jobs(keyword=${keyword},location=${location},employmentType=${employmentType},industry=${industry},page=${i})}">
-                        </a>
-                    </li>
-                    <li class="page-item" th:classappend="${currentPage == totalPages-1} ? 'disabled'">
-                        <a class="page-link"
-                           th:href="@{/jobs(keyword=${keyword},location=${location},employmentType=${employmentType},industry=${industry},page=${currentPage+1})}">
-                            <i class="fa-solid fa-chevron-right fa-xs"></i>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
         </div>
     </div>
-</div>
+</main>
 
-<div th:replace="~{fragments :: footer}"></div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    setTimeout(() => document.querySelectorAll('.flash-toast').forEach(el =>
-        bootstrap.Alert.getOrCreateInstance(el).close()), 4000);
-</script>
+<footer th:replace="~{fragments :: footer}"></footer>
+
 </body>
 </html>

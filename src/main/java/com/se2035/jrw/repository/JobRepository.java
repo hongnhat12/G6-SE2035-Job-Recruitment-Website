@@ -18,6 +18,9 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
     @EntityGraph(attributePaths = {"company"})
     List<Job> findTop8ByStatusOrderByCreatedAtDesc(JobStatus status);
 
+    @EntityGraph(attributePaths = {"company"})
+    List<Job> findTop8ByStatusOrderBySalaryMaxDesc(JobStatus status);
+
     @Query(value = """
             SELECT j FROM Job j
             JOIN FETCH j.company

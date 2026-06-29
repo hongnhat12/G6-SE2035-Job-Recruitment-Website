@@ -20,4 +20,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
     boolean existsByCandidateAndJob(Candidate candidate, Job job);
 
     long countByJob(Job job);
+
+    @EntityGraph(attributePaths = {"job", "job.company", "candidate", "cv"})
+    java.util.List<Application> findByJob_Recruiter_RecruiterIdOrderByAppliedAtDesc(Integer recruiterId);
+
+    @EntityGraph(attributePaths = {"job", "job.company", "candidate", "cv"})
+    java.util.List<Application> findByJob_JobIdOrderByAppliedAtDesc(Integer jobId);
 }

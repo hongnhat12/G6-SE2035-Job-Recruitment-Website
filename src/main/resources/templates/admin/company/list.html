@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: head('Companies Management')}"></head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+
+<nav th:replace="~{fragments :: navbar}"></nav>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Admin Sidebar -->
+        <aside class="col-span-1">
+            <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                <div class="bg-gray-900 text-white py-4 px-6">
+                    <h3 class="font-bold flex items-center text-sm">
+                        <i class="fa-solid fa-gauge mr-2"></i> Admin Control
+                    </h3>
+                </div>
+                <div class="divide-y divide-gray-50">
+                    <a th:href="@{/admin/companies}" class="block py-4 px-6 text-sm font-bold text-teal-600 bg-teal-50 flex items-center">
+                        <i class="fa-solid fa-building mr-3 text-teal-600"></i> Companies
+                    </a>
+                    <a th:href="@{/admin/industries}" class="block py-4 px-6 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center transition">
+                        <i class="fa-solid fa-tags mr-3 text-gray-400"></i> Industries
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Panel -->
+        <div class="col-span-1 lg:col-span-3 space-y-6">
+            <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                <!-- Header -->
+                <div class="border-b border-gray-100 py-6 px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Companies</h1>
+                        <p class="text-sm text-gray-500 mt-1">Manage registered corporate profiles</p>
+                    </div>
+                    <a th:href="@{/admin/companies/create}" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-5 rounded-xl transition shadow-md flex items-center text-sm">
+                        <i class="fa-solid fa-plus mr-1.5"></i> Add New Company
+                    </a>
+                </div>
+
+                <!-- Search -->
+                <div class="bg-gray-50 py-4 px-8 border-b border-gray-100">
+                    <form th:action="@{/admin/companies}" method="GET" class="flex flex-col sm:flex-row gap-3 items-center">
+                        <div class="relative flex-grow w-full">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                            </span>
+                            <input type="text" name="search" th:value="${search}" placeholder="Search companies by name..." 
+                                   class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition text-sm">
+                        </div>
+                        <button type="submit" class="w-full sm:w-auto bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition">
+                            Search
+                        </button>
+                        <a th:if="${search}" th:href="@{/admin/companies}" class="text-sm text-teal-600 hover:underline">
+                            Clear
+                        </a>
+                    </form>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-100">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Logo</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Company Name</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Contact</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Address</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50 bg-white">
+                            <tr th:each="comp : ${companies}" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <img th:if="${comp.logo}" th:src="${comp.logo}" alt="Logo" class="w-12 h-12 rounded-xl object-contain border border-gray-100 p-1 bg-white">
+                                    <div th:unless="${comp.logo}" class="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400">
+                                        <i class="fa-solid fa-building text-lg"></i>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-bold text-gray-900" th:text="${comp.companyName}">Company Name</div>
+                                    <div class="text-xs text-gray-400 font-mono mt-0.5" th:text="'ID: ' + ${comp.companyId}">ID: 1</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-xs text-gray-500" th:if="${comp.email}">
+                                        <i class="fa-regular fa-envelope mr-1"></i><span th:text="${comp.email}"></span>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1" th:if="${comp.phone}">
+                                        <i class="fa-solid fa-phone mr-1"></i><span th:text="${comp.phone}"></span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500" th:text="${comp.address}">Address</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span th:text="${comp.status}" 
+                                          th:class="${comp.status == 'ACTIVE' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'} + ' px-2.5 py-1 text-xs font-bold rounded-lg'">
+                                        ACTIVE
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                                    <a th:href="@{/admin/companies/edit/{id}(id=${comp.companyId})}" class="text-teal-600 hover:text-teal-900">Edit</a>
+                                    <button th:data-id="${comp.companyId}" th:data-name="${comp.companyName}" onclick="openDeleteModal(this)" class="text-red-600 hover:text-red-900">Delete</button>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(companies)}">
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-400 text-sm">
+                                    <i class="fa-solid fa-inbox text-3xl mb-3 block"></i>
+                                    <div>No companies found</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Footer Pagination -->
+                <div th:if="${totalPages > 0}" class="border-t border-gray-100 py-5 px-8 flex justify-between items-center bg-gray-50">
+                    <p class="text-sm text-gray-500">
+                        Total items: <strong class="text-gray-900" th:text="${totalItems}">0</strong>
+                    </p>
+                    <nav class="flex space-x-1">
+                        <a th:if="${currentPage > 0}" th:href="@{/admin/companies(page=${currentPage - 1}, search=${search})}" 
+                           class="px-3 py-1.5 border border-gray-200 bg-white text-gray-600 rounded-lg hover:border-teal-400 hover:text-teal-600 transition text-xs font-medium">
+                            Previous
+                        </a>
+                        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                            <a th:href="@{/admin/companies(page=${i}, search=${search})}"
+                               th:class="${currentPage == i ? 'bg-teal-600 border-teal-600 text-white font-bold' : 'bg-white border-gray-200 text-gray-600 hover:border-teal-400 hover:text-teal-600'} + ' px-3.5 py-1.5 border rounded-lg transition text-xs font-medium'"
+                               th:text="${i + 1}">
+                                1
+                            </a>
+                        </span>
+                        <a th:if="${currentPage < totalPages - 1}" th:href="@{/admin/companies(page=${currentPage + 1}, search=${search})}" 
+                           class="px-3 py-1.5 border border-gray-200 bg-white text-gray-600 rounded-lg hover:border-teal-400 hover:text-teal-600 transition text-xs font-medium">
+                            Next
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Delete Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-100">
+        <div class="bg-red-600 p-6 text-white flex justify-between items-center">
+            <h3 class="text-lg font-bold flex items-center">
+                <i class="fa-solid fa-triangle-exclamation mr-2"></i> Confirm Deletion
+            </h3>
+            <button onclick="closeDeleteModal()" class="text-white hover:text-red-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-8 space-y-6">
+            <p class="text-sm text-gray-500">Are you sure you want to delete this company? This action cannot be undone and will affect associated jobs/recruiters.</p>
+            <div class="bg-yellow-50 border border-yellow-100 rounded-xl p-4 flex items-center gap-3">
+                <i class="fa-solid fa-building text-yellow-600 text-lg"></i>
+                <strong id="deleteTargetName" class="text-gray-800 text-sm">Company Name</strong>
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-50">
+                <button onclick="closeDeleteModal()" class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-700 transition">Cancel</button>
+                <a id="confirmDeleteBtn" href="#" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+
+<script>
+    function openDeleteModal(button) {
+        const id = button.getAttribute('data-id');
+        const name = button.getAttribute('data-name');
+        
+        document.getElementById('deleteTargetName').innerText = name;
+        document.getElementById('confirmDeleteBtn').href = '/admin/companies/delete/' + id;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+</script>
+</body>
+</html>

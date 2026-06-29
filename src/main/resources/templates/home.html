@@ -2,168 +2,183 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments :: head('Home')}"></head>
-<body class="d-flex flex-column min-vh-100">
+<body class="bg-gray-50 flex flex-col min-h-screen">
 
-<div th:replace="~{fragments :: navbar}"></div>
+<nav th:replace="~{fragments :: navbar}"></nav>
 <div th:replace="~{fragments :: flash}"></div>
 
-<!-- ═══ HERO ════════════════════════════════════════════════ -->
-<section class="hero-section">
-    <div class="container text-center">
-        <p class="text-white text-opacity-75 fw-semibold small text-uppercase mb-3">
-            <i class="fa-solid fa-fire me-1 text-warning"></i>Leading Job Recruitment Platform
-        </p>
-        <h1 class="display-5 fw-bold text-white mb-3" style="letter-spacing:-1px">
-            Find Your<br>
-            <span class="text-warning">Dream Job</span>
-        </h1>
-        <p class="text-white text-opacity-75 fs-5 mb-5">
-            Thousands of job opportunities from top companies are waiting for you
-        </p>
+<main class="flex-grow">
+    <!-- Hero Section -->
+    <section class="bg-teal-600 py-20 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">Find Your Dream Job</h1>
+            <p class="text-xl text-teal-100 mb-10 max-w-2xl mx-auto">Thousands of high-quality jobs from top companies are waiting for you.</p>
 
-        <!-- Search bar -->
-        <div class="row justify-content-center mb-4">
-            <div class="col-lg-8 col-xl-7">
-                <form th:action="@{/jobs}" method="get" class="search-form-hero">
-                    <i class="fa-solid fa-magnifying-glass text-muted flex-shrink-0"></i>
-                    <input type="text" name="keyword" class="form-control flex-grow-1"
-                           placeholder="Job title, skills, keywords..." autocomplete="off">
-                    <div class="divider d-none d-sm-block"></div>
-                    <div class="d-none d-sm-flex align-items-center gap-2 flex-shrink-0" style="min-width:170px">
-                        <i class="fa-solid fa-location-dot text-muted"></i>
-                        <select name="location" class="form-select">
-                            <option value="">All locations</option>
-                            <option th:each="loc : ${locations}"
-                                    th:value="${loc}" th:text="${loc}"></option>
-                        </select>
-                    </div>
-                    <button type="submit"
-                            class="btn btn-primary fw-semibold px-4 py-2 rounded-3 flex-shrink-0">
-                        Search
-                    </button>
-                </form>
+            <form th:action="@{/jobs}" method="GET"
+                  class="max-w-4xl mx-auto bg-white p-2 rounded-2xl shadow-2xl flex flex-col md:flex-row gap-2">
+
+                <div class="flex-grow flex items-center px-4 py-3 border-b md:border-b-0 md:border-r border-gray-100">
+                    <svg class="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" name="keyword" placeholder="Job title, skills, company..."
+                           class="w-full text-gray-800 placeholder-gray-400 focus:outline-none text-sm">
+                </div>
+
+                <div class="md:w-64 flex items-center px-4 py-3 border-b md:border-b-0 md:border-r border-gray-100">
+                    <svg class="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <select name="location" class="w-full text-gray-700 focus:outline-none bg-transparent text-sm">
+                        <option value="">All Locations</option>
+                        <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}"></option>
+                    </select>
+                </div>
+
+                <button type="submit"
+                        class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-8 rounded-xl transition shadow-lg whitespace-nowrap">
+                    Search
+                </button>
+            </form>
+
+            <!-- Quick Tags -->
+            <div class="mt-6 flex flex-wrap justify-center gap-3 text-sm">
+                <span class="text-teal-200 font-medium">Quick links:</span>
+                <a th:href="@{/jobs(keyword='Java')}" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-1.5 rounded-full transition">Java</a>
+                <a th:href="@{/jobs(keyword='Frontend')}" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-1.5 rounded-full transition">Frontend</a>
+                <a th:href="@{/jobs(keyword='Marketing')}" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-1.5 rounded-full transition">Marketing</a>
+                <a th:href="@{/jobs(employmentType='Full-time')}" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-1.5 rounded-full transition">Full-time</a>
+                <a th:href="@{/jobs(employmentType='Remote')}" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-1.5 rounded-full transition">Remote</a>
             </div>
         </div>
+    </section>
 
-        <!-- Quick chips -->
-        <div class="d-flex flex-wrap justify-content-center gap-2">
-            <span class="text-white text-opacity-60 small me-1 align-self-center">Popular:</span>
-            <a th:href="@{/jobs(keyword='Java')}"      class="quick-chip">Java</a>
-            <a th:href="@{/jobs(keyword='Python')}"    class="quick-chip">Python</a>
-            <a th:href="@{/jobs(keyword='React')}"     class="quick-chip">React</a>
-            <a th:href="@{/jobs(keyword='Spring')}"    class="quick-chip">Spring Boot</a>
-            <a th:href="@{/jobs(keyword='UI/UX')}"     class="quick-chip">UI / UX</a>
-            <a th:href="@{/jobs(keyword='DevOps')}"    class="quick-chip">DevOps</a>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ STATS BAR ══════════════════════════════════════════ -->
-<section class="bg-white border-bottom py-4">
-    <div class="container">
-        <div class="row text-center g-0">
-            <div class="col-4 border-end">
-                <div class="stat-number">1,200+</div>
-                <div class="small text-muted fw-medium">Job Openings</div>
-            </div>
-            <div class="col-4 border-end">
-                <div class="stat-number">150+</div>
-                <div class="small text-muted fw-medium">Companies</div>
-            </div>
-            <div class="col-4">
-                <div class="stat-number">50K+</div>
-                <div class="small text-muted fw-medium">Candidates</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ FEATURED JOBS ═══════════════════════════════════════ -->
-<section class="py-5">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-end mb-4">
+    <!-- Featured Jobs Section (Top Rated/Recommended) -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="flex justify-between items-end mb-10">
             <div>
-                <h2 class="section-title mb-1">Featured Jobs</h2>
-                <p class="text-muted mb-0">Latest opportunities from top companies</p>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Featured Jobs (High Salary)</h2>
+                <p class="text-gray-500">High-paying opportunities from leading enterprises</p>
             </div>
-            <a th:href="@{/jobs}" class="btn btn-outline-primary fw-semibold px-4">
-                View All <i class="fa-solid fa-arrow-right ms-1"></i>
-            </a>
         </div>
 
-        <!-- Empty -->
-        <div th:if="${#lists.isEmpty(featuredJobs)}" class="empty-state bg-white rounded-4 border">
-            <div class="empty-icon"><i class="fa-solid fa-briefcase"></i></div>
-            <p class="fw-semibold">No job listings available</p>
+        <div class="relative group">
+            <!-- Navigation Buttons -->
+            <button id="prevHottestBtn" class="absolute z-10 -left-5 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg border border-gray-100 text-teal-600 hover:bg-teal-50 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button id="nextHottestBtn" class="absolute z-10 -right-5 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg border border-gray-100 text-teal-600 hover:bg-teal-50 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+
+            <!-- Slider Container -->
+            <div id="hottestSlider" class="flex overflow-x-auto gap-6 pb-6 pt-2 snap-x snap-mandatory scroll-smooth hide-scrollbar px-2 -mx-2">
+                <div th:each="job : ${hottestJobs}" class="snap-start flex-none w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]">
+                    <a th:href="@{/jobs/{id}(id=${job.jobId})}"
+                       class="block h-full bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-xl hover:-translate-y-1 hover:border-teal-300 transition-all duration-300 group cursor-pointer">
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center p-1 border border-gray-50 flex-shrink-0">
+                                <img th:src="${job.company != null and job.company.logo != null ? job.company.logo : 'https://via.placeholder.com/100'}" alt="logo" class="max-w-full max-h-full object-contain">
+                            </div>
+                            <div class="overflow-hidden">
+                                <h4 class="font-bold text-gray-900 group-hover:text-teal-600 truncate" th:title="${job.title}" th:text="${job.title}">Job Title</h4>
+                                <p class="text-xs text-teal-600 font-medium truncate" th:title="${job.company?.companyName}" th:text="${job.company?.companyName}">Company</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-sm pt-4 border-t border-gray-50 mt-auto">
+                            <span class="text-green-600 font-bold text-lg" th:text="${job.salaryMax != null ? (job.salaryMax.longValue() / 1000000) + 'M' : 'Negotiable'}">Salary</span>
+                            <span class="bg-teal-50 text-teal-700 text-xs px-3 py-1.5 rounded-lg font-semibold group-hover:bg-teal-600 group-hover:text-white transition-colors">Apply</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <!-- Grid -->
-        <div class="row g-3">
-            <div th:each="job : ${featuredJobs}" class="col-sm-6 col-xl-3">
-                <a th:href="@{/jobs/{id}(id=${job.jobId})}" class="job-card-link">
-                    <div class="job-card h-100">
-                        <div class="d-flex align-items-start gap-3 mb-3">
-                            <div class="company-avatar">
-                                <i class="fa-solid fa-building"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <h6 class="fw-semibold text-dark mb-1 text-truncate"
-                                    th:text="${job.title}">Job Title</h6>
-                                <p class="small text-muted mb-0 text-truncate"
-                                   th:text="${job.company?.companyName}">Company</p>
-                            </div>
-                        </div>
+        <style>
+            .hide-scrollbar {
+                -ms-overflow-style: none; /* IE and Edge */
+                scrollbar-width: none; /* Firefox */
+            }
+            .hide-scrollbar::-webkit-scrollbar {
+                display: none; /* Chrome, Safari and Opera */
+            }
+        </style>
 
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <span class="pill-type"
-                                  th:text="${job.employmentType != null ? job.employmentType : 'Full-time'}">
-                            </span>
-                            <span th:if="${job.location}" class="pill-tag">
-                                <i class="fa-solid fa-location-dot me-1"></i>
-                                <span th:text="${job.location}"></span>
-                            </span>
-                        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const slider = document.getElementById('hottestSlider');
+                const prevBtn = document.getElementById('prevHottestBtn');
+                const nextBtn = document.getElementById('nextHottestBtn');
+                
+                if(!slider || !prevBtn || !nextBtn) return;
 
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="pill-salary">
-                                <i class="fa-solid fa-coins me-1"></i>
-                                <span th:if="${job.salaryMin != null and job.salaryMax != null}"
-                                      th:text="${job.salaryMin.longValue()/1000000 + '–' + job.salaryMax.longValue()/1000000 + 'M'}">
-                                </span>
-                                <span th:if="${job.salaryMin == null or job.salaryMax == null}">Negotiable</span>
+                prevBtn.addEventListener('click', () => {
+                    const scrollAmount = slider.clientWidth;
+                    if (slider.scrollLeft <= 10) {
+                        const maxScroll = slider.scrollWidth - slider.clientWidth;
+                        slider.scrollTo({ left: maxScroll, behavior: 'smooth' });
+                    } else {
+                        slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                    }
+                });
+
+                nextBtn.addEventListener('click', () => {
+                    const scrollAmount = slider.clientWidth;
+                    const maxScroll = slider.scrollWidth - slider.clientWidth;
+                    if (slider.scrollLeft >= maxScroll - 10) {
+                        slider.scrollTo({ left: 0, behavior: 'smooth' });
+                    } else {
+                        slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                    }
+                });
+            });
+        </script>
+    </section>
+
+    <!-- Latest Jobs Section -->
+    <section class="bg-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-end mb-10">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Latest Jobs</h2>
+                    <p class="text-gray-500">Apply now to be among the first applicants</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div th:each="job : ${latestJobs}" class="flex items-center p-5 border border-gray-50 rounded-2xl hover:bg-teal-50 transition cursor-pointer" th:onclick="|location.href='@{/jobs/{id}(id=${job.jobId})}'|">
+                    <div class="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center p-2 mr-6 border border-gray-100">
+                         <img th:src="${job.company != null and job.company.logo != null ? job.company.logo : 'https://via.placeholder.com/100'}" alt="logo" class="max-w-full max-h-full object-contain">
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="text-lg font-bold text-gray-900" th:text="${job.title}">Job Title</h3>
+                        <div class="flex items-center space-x-4 text-sm text-gray-500 mt-1">
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-1 text-teal-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0z"></path>
+                                </svg>
+                                <span th:text="${job.company?.companyName}">Company</span>
                             </span>
-                            <span th:if="${job.deadline != null}" class="small text-muted">
-                                Due: <span th:text="${#temporals.format(job.deadline,'dd/MM')}"></span>
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                </svg>
+                                <span th:text="${job.location}">City</span>
                             </span>
                         </div>
                     </div>
-                </a>
+                    <div class="text-right hidden md:block">
+                        <p class="text-teal-600 font-bold" th:text="${(job.salaryMin != null ? (job.salaryMin.longValue() / 1000000) : '0') + ' - ' + (job.salaryMax != null ? (job.salaryMax.longValue() / 1000000) : '0') + 'M'}">Salary Range</p>
+                        <span class="text-xs text-gray-400">Posted <span th:text="${#temporals.format(job.createdAt, 'dd/MM/yyyy')}">Date</span></span>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+</main>
 
-<!-- ═══ CTA BANNER (guests only) ═══════════════════════════ -->
-<section sec:authorize="!isAuthenticated()" class="py-5"
-         style="background: linear-gradient(135deg,#1e40af,#4f46e5);">
-    <div class="container text-center text-white">
-        <h3 class="fw-bold mb-2">Start Your Career Journey Today</h3>
-        <p class="text-white text-opacity-75 mb-4">
-            Login to apply for jobs and track your applications
-        </p>
-        <a th:href="@{/login}"
-           class="btn btn-warning btn-lg fw-bold px-5 shadow">
-            Login Now <i class="fa-solid fa-arrow-right ms-2"></i>
-        </a>
-    </div>
-</section>
+<footer th:replace="~{fragments :: footer}"></footer>
 
-<div th:replace="~{fragments :: footer}"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    setTimeout(() => document.querySelectorAll('.flash-toast').forEach(el =>
-        bootstrap.Alert.getOrCreateInstance(el).close()), 4000);
-</script>
 </body>
 </html>
