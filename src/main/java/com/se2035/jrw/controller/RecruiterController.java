@@ -20,44 +20,44 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecruiterController {
 
-    private final UserRepository userRepository;
+    private final UserRepo userRepo;
     private final RecruiterRepo recruiterRepo;
-    private final JobRepository jobRepository;
+    private final JobRepo jobRepo;
     private final IndustryRepo industryRepo;
-    private final ApplicationRepository applicationRepository;
+    private final ApplicationRepo applicationRepo;
 
     private Recruiter getCurrentRecruiter(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) {
-            throw new IllegalStateException("Bạn chưa đăng nhập");
+            throw new IllegalStateException("You are not logged in");
         }
         String email = auth.getName();
-        return userRepository.findByEmail(email)
+        return userRepo.findByEmail(email)
                 .flatMap(u -> recruiterRepo.findByUser_UserId(u.getUserId()))
-                .orElseThrow(() -> new IllegalStateException("Không tìm thấy thông tin nhà tuyển dụng"));
+                .orElseThrow(() -> new IllegalStateException("Recruiter profile not found"));
     }
 
-    // Recruiter Dashboard
     @GetMapping("/jobs/manage")
     public String manageJobs(Authentication auth, Model model) {
         try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            List<Job> myJobs = jobRepository.findAll().stream()
+            List<Job> myJobs = jobRepo.findAll().stream()
                     .filter(j -> j.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId()) 
-                            && j.getStatus() != JobStatus.DELETED)
+                              && j.getStatus() != JobStatus.DELETED)
                     .toList();
-            model.addAttribute("myJobs", myJobs);
+            model.addAttribute("jobs", myJobs);
             return "recruiter/dashboard";
         } catch (Exception e) {
             return "redirect:/login";
         }
     }
 
-    // Show Create Job Form
     @GetMapping("/jobs/create")
     public String showCreateForm(Authentication auth, Model model) {
         try {
-            getCurrentRecruiter(auth);
-            model.addAttribute("job", new Job());
+            Recruiter recruiter = getCurrentRecruiter(auth);
+            Job job = new Job();
+            job.setCompany(recruiter.getCompany());
+            model.addAttribute("job", job);
             model.addAttribute("industries", industryRepo.findAll());
             return "recruiter/job-form";
         } catch (Exception e) {
@@ -65,70 +65,48 @@ public class RecruiterController {
         }
     }
 
-    // Process Create Job
     @PostMapping("/jobs/create")
     public String createJob(
-            @RequestParam String title,
-            @RequestParam Integer industryId,
-            @RequestParam String location,
-            @RequestParam BigDecimal salaryMin,
-            @RequestParam BigDecimal salaryMax,
-            @RequestParam String employmentType,
-            @RequestParam Integer experienceRequired,
-            @RequestParam String requiredSkills,
-            @RequestParam String deadlineStr,
-            @RequestParam String description,
-            @RequestParam String requirement,
-            @RequestParam String benefit,
+            @ModelAttribute("job") Job job,
+            @RequestParam("industryId") Integer industryId,
             Authentication auth,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            Model model) {
 
         try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            Industry industry = industryRepo.findById(industryId)
-                    .orElseThrow(() -> new IllegalArgumentException("Ngành nghề không hợp lệ"));
+            job.setRecruiter(recruiter);
+            job.setCompany(recruiter.getCompany());
 
-            if (salaryMin != null && salaryMax != null && salaryMin.compareTo(salaryMax) > 0) {
-                throw new IllegalArgumentException("Minimum salary cannot be greater than maximum salary");
+            Industry ind = industryRepo.findById(industryId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid industry"));
+            job.setIndustry(ind);
+
+            if (job.getSalaryMin() != null && job.getSalaryMax() != null 
+                    && job.getSalaryMin().compareTo(job.getSalaryMax()) > 0) {
+                model.addAttribute("errorMessage", "Salary Min must be less than or equal to Salary Max");
+                model.addAttribute("industries", industryRepo.findAll());
+                return "recruiter/job-form";
             }
 
-            Job job = Job.builder()
-                    .title(title)
-                    .recruiter(recruiter)
-                    .company(recruiter.getCompany())
-                    .industry(industry)
-                    .location(location)
-                    .salaryMin(salaryMin)
-                    .salaryMax(salaryMax)
-                    .employmentType(employmentType)
-                    .experienceRequired(experienceRequired)
-                    .requiredSkills(requiredSkills)
-                    .deadline(deadlineStr.isEmpty() ? null : LocalDate.parse(deadlineStr))
-                    .description(description)
-                    .requirement(requirement)
-                    .benefit(benefit)
-                    .status(JobStatus.PENDING)
-                    .build();
-
-            jobRepository.save(job);
-            redirectAttributes.addFlashAttribute("success", "Đã tạo tin tuyển dụng thành công! Vui lòng chờ kiểm duyệt.");
-            return "redirect:/jobs/manage";
+            job.setStatus(JobStatus.PENDING);
+            jobRepo.save(job);
+            redirectAttributes.addFlashAttribute("success", "Job posting created successfully! Pending admin approval.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
-            return "redirect:/jobs/create";
+            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
         }
+        return "redirect:/jobs/manage";
     }
 
-    // Show Edit Job Form
     @GetMapping("/jobs/edit/{id}")
     public String showEditForm(@PathVariable Integer id, Authentication auth, Model model) {
         try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            Job job = jobRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tin tuyển dụng"));
+            Job job = jobRepo.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
             if (!job.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
-                throw new IllegalStateException("Bạn không có quyền sửa tin này");
+                throw new IllegalStateException("You do not have permission to edit this job");
             }
 
             model.addAttribute("job", job);
@@ -139,112 +117,102 @@ public class RecruiterController {
         }
     }
 
-    // Process Edit Job
-    @PostMapping("/jobs/edit")
+    @PostMapping("/jobs/edit/{jobId}")
     public String editJob(
-            @RequestParam Integer jobId,
-            @RequestParam String title,
-            @RequestParam Integer industryId,
-            @RequestParam String location,
-            @RequestParam BigDecimal salaryMin,
-            @RequestParam BigDecimal salaryMax,
-            @RequestParam String employmentType,
-            @RequestParam Integer experienceRequired,
-            @RequestParam String requiredSkills,
-            @RequestParam String deadlineStr,
-            @RequestParam String description,
-            @RequestParam String requirement,
-            @RequestParam String benefit,
+            @PathVariable Integer jobId,
+            @ModelAttribute("job") Job jobForm,
+            @RequestParam("industryId") Integer industryId,
             Authentication auth,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            Model model) {
 
         try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            Job job = jobRepository.findById(jobId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tin tuyển dụng"));
+            Job job = jobRepo.findById(jobId)
+                    .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
             if (!job.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
-                throw new IllegalStateException("Bạn không có quyền sửa tin này");
+                throw new IllegalStateException("You do not have permission to edit this job");
             }
 
-            Industry industry = industryRepo.findById(industryId)
-                    .orElseThrow(() -> new IllegalArgumentException("Ngành nghề không hợp lệ"));
+            Industry ind = industryRepo.findById(industryId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid industry"));
 
-            if (salaryMin != null && salaryMax != null && salaryMin.compareTo(salaryMax) > 0) {
-                throw new IllegalArgumentException("Minimum salary cannot be greater than maximum salary");
+            if (jobForm.getSalaryMin() != null && jobForm.getSalaryMax() != null 
+                    && jobForm.getSalaryMin().compareTo(jobForm.getSalaryMax()) > 0) {
+                model.addAttribute("errorMessage", "Salary Min must be less than or equal to Salary Max");
+                model.addAttribute("industries", industryRepo.findAll());
+                return "recruiter/job-form";
             }
 
-            job.setTitle(title);
-            job.setIndustry(industry);
-            job.setLocation(location);
-            job.setSalaryMin(salaryMin);
-            job.setSalaryMax(salaryMax);
-            job.setEmploymentType(employmentType);
-            job.setExperienceRequired(experienceRequired);
-            job.setRequiredSkills(requiredSkills);
-            job.setDeadline(deadlineStr.isEmpty() ? null : LocalDate.parse(deadlineStr));
-            job.setDescription(description);
-            job.setRequirement(requirement);
-            job.setBenefit(benefit);
-            job.setStatus(JobStatus.PENDING); // return to pending for re-approval
+            job.setTitle(jobForm.getTitle());
+            job.setIndustry(ind);
+            job.setDescription(jobForm.getDescription());
+            job.setRequirement(jobForm.getRequirement());
+            job.setBenefit(jobForm.getBenefit());
+            job.setLocation(jobForm.getLocation());
+            job.setSalaryMin(jobForm.getSalaryMin());
+            job.setSalaryMax(jobForm.getSalaryMax());
+            job.setEmploymentType(jobForm.getEmploymentType());
+            job.setExperienceRequired(jobForm.getExperienceRequired());
+            job.setRequiredSkills(jobForm.getRequiredSkills());
+            job.setDeadline(jobForm.getDeadline());
+            
+            job.setStatus(JobStatus.PENDING);
+            jobRepo.save(job);
 
-            jobRepository.save(job);
-            redirectAttributes.addFlashAttribute("success", "Cập nhật thành công! Tin tuyển dụng sẽ được kiểm duyệt lại.");
-            return "redirect:/jobs/manage";
+            redirectAttributes.addFlashAttribute("success", "Job updated successfully! It will be reviewed by admin again.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
-            return "redirect:/jobs/edit/" + jobId;
+            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
         }
+        return "redirect:/jobs/manage";
     }
 
-    // Process Close Job
-    @PostMapping("/jobs/close")
-    public String closeJob(@RequestParam Integer id, Authentication auth, RedirectAttributes redirectAttributes) {
+    @PostMapping("/jobs/close/{id}")
+    public String closeJob(@PathVariable Integer id, Authentication auth, RedirectAttributes redirectAttributes) {
         try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            Job job = jobRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tin tuyển dụng"));
+            Job job = jobRepo.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
             if (!job.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
-                throw new IllegalStateException("Bạn không có quyền thực hiện thao tác này");
+                throw new IllegalStateException("You do not have permission to perform this action");
             }
 
             job.setStatus(JobStatus.CLOSED);
-            jobRepository.save(job);
-            redirectAttributes.addFlashAttribute("success", "Đã đóng tin tuyển dụng thành công.");
+            jobRepo.save(job);
+            redirectAttributes.addFlashAttribute("success", "Job closed successfully.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/jobs/manage";
     }
 
-    // Process Delete Job
-    @PostMapping("/jobs/delete")
-    public String deleteJob(@RequestParam Integer id, Authentication auth, RedirectAttributes redirectAttributes) {
+    @PostMapping("/jobs/delete/{id}")
+    public String deleteJob(@PathVariable Integer id, Authentication auth, RedirectAttributes redirectAttributes) {
         try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            Job job = jobRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tin tuyển dụng"));
+            Job job = jobRepo.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
             if (!job.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
-                throw new IllegalStateException("Bạn không có quyền thực hiện thao tác này");
+                throw new IllegalStateException("You do not have permission to perform this action");
             }
 
             job.setStatus(JobStatus.DELETED);
-            jobRepository.save(job);
-            redirectAttributes.addFlashAttribute("success", "Đã xóa tin tuyển dụng thành công.");
+            jobRepo.save(job);
+            redirectAttributes.addFlashAttribute("success", "Job deleted successfully.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/jobs/manage";
     }
 
-    // Manage Applications
     @GetMapping("/applications/manage")
     public String manageApplications(Authentication auth, Model model) {
         try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            List<Application> applications = applicationRepository
+            List<Application> applications = applicationRepo
                     .findByJob_Recruiter_RecruiterIdOrderByAppliedAtDesc(recruiter.getRecruiterId());
             model.addAttribute("applications", applications);
             return "recruiter/applications";
@@ -253,19 +221,18 @@ public class RecruiterController {
         }
     }
 
-    // View Applications by specific Job
     @GetMapping("/applications/job/{jobId}")
     public String applicationsByJob(@PathVariable Integer jobId, Authentication auth, Model model) {
         try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            Job job = jobRepository.findById(jobId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tin tuyển dụng"));
+            Job job = jobRepo.findById(jobId)
+                    .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
             if (!job.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
-                throw new IllegalStateException("Bạn không có quyền xem đơn ứng tuyển của tin này");
+                throw new IllegalStateException("You do not have permission to view applications for this job");
             }
 
-            List<Application> applications = applicationRepository.findByJob_JobIdOrderByAppliedAtDesc(jobId);
+            List<Application> applications = applicationRepo.findByJob_JobIdOrderByAppliedAtDesc(jobId);
             model.addAttribute("applications", applications);
             model.addAttribute("jobId", jobId);
             return "recruiter/applications";
@@ -274,7 +241,6 @@ public class RecruiterController {
         }
     }
 
-    // Process Update Application Status
     @PostMapping("/applications/status")
     public String updateApplicationStatus(
             @RequestParam Integer applicationId,
@@ -284,18 +250,18 @@ public class RecruiterController {
 
         try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            Application app = applicationRepository.findById(applicationId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn ứng tuyển"));
+            Application app = applicationRepo.findById(applicationId)
+                    .orElseThrow(() -> new IllegalArgumentException("Application not found"));
 
             if (!app.getJob().getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
-                throw new IllegalStateException("Bạn không có quyền duyệt hồ sơ này");
+                throw new IllegalStateException("You do not have permission to review this application");
             }
 
             ApplicationStatus appStatus = ApplicationStatus.valueOf(status.toUpperCase());
             app.setStatus(appStatus);
-            applicationRepository.save(app);
+            applicationRepo.save(app);
 
-            redirectAttributes.addFlashAttribute("success", "Đã cập nhật trạng thái đơn ứng tuyển.");
+            redirectAttributes.addFlashAttribute("success", "Application status updated successfully.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }

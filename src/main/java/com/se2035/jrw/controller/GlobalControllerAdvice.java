@@ -2,8 +2,8 @@ package com.se2035.jrw.controller;
 
 import com.se2035.jrw.entity.User;
 import com.se2035.jrw.enums.UserRole;
-import com.se2035.jrw.repository.UserRepository;
-import com.se2035.jrw.repository.CandidateRepository;
+import com.se2035.jrw.repository.UserRepo;
+import com.se2035.jrw.repository.CandidateRepo;
 import com.se2035.jrw.repository.RecruiterRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
@@ -16,18 +16,18 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class GlobalControllerAdvice {
 
-    private final UserRepository userRepository;
-    private final CandidateRepository candidateRepository;
+    private final UserRepo userRepo;
+    private final CandidateRepo candidateRepo;
     private final RecruiterRepo recruiterRepo;
 
     @ModelAttribute
     public void addAttributes(Model model, Principal principal) {
         if (principal != null) {
             String email = principal.getName();
-            userRepository.findByEmail(email).ifPresent(user -> {
+            userRepo.findByEmail(email).ifPresent(user -> {
                 model.addAttribute("currentUser", user);
                 if (user.getRole() == UserRole.CANDIDATE) {
-                    candidateRepository.findByUser_UserId(user.getUserId()).ifPresent(c -> {
+                    candidateRepo.findByUser_UserId(user.getUserId()).ifPresent(c -> {
                         model.addAttribute("candidate", c);
                         model.addAttribute("fullName", c.getFullName());
                         model.addAttribute("profileImage", c.getProfileImage());

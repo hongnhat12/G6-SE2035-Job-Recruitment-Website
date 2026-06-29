@@ -4,9 +4,9 @@ import com.se2035.jrw.config.SecurityUtils;
 import com.se2035.jrw.entity.Candidate;
 import com.se2035.jrw.entity.Job;
 import com.se2035.jrw.enums.JobStatus;
-import com.se2035.jrw.repository.CandidateRepository;
-import com.se2035.jrw.repository.JobRepository;
-import com.se2035.jrw.repository.UserRepository;
+import com.se2035.jrw.repository.CandidateRepo;
+import com.se2035.jrw.repository.JobRepo;
+import com.se2035.jrw.repository.UserRepo;
 import com.se2035.jrw.service.ApplicationService;
 import com.se2035.jrw.service.SavedJobService;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +26,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JobController {
 
-    private final JobRepository jobRepository;
+    private final JobRepo jobRepo;
     private final SavedJobService savedJobService;
     private final ApplicationService applicationService;
     private final SecurityUtils securityUtils;
-    private final UserRepository userRepository;
-    private final CandidateRepository candidateRepository;
+    private final UserRepo userRepo;
+    private final CandidateRepo candidateRepo;
 
     @GetMapping
     public String listJobs(
@@ -43,8 +43,7 @@ public class JobController {
             @RequestParam(defaultValue = "9") int size,
             Model model) {
 
-        // Use searchApprovedJobs from JobRepository
-        Page<Job> jobPage = jobRepository.searchApprovedJobs(
+        Page<Job> jobPage = jobRepo.searchApprovedJobs(
                 (keyword == null || keyword.trim().isEmpty()) ? null : keyword.trim(),
                 (location == null || location.trim().isEmpty()) ? null : location.trim(),
                 (employmentType == null || employmentType.trim().isEmpty()) ? null : employmentType.trim(),
@@ -57,12 +56,10 @@ public class JobController {
         model.addAttribute("totalPages", jobPage.getTotalPages());
         model.addAttribute("totalElements", jobPage.getTotalElements());
 
-        // Dropdown filters lists
-        model.addAttribute("locations", jobRepository.findDistinctLocations());
-        model.addAttribute("employmentTypes", jobRepository.findDistinctEmploymentTypes());
-        model.addAttribute("industries", jobRepository.findDistinctIndustries());
+        model.addAttribute("locations", jobRepo.findDistinctLocations());
+        model.addAttribute("employmentTypes", jobRepo.findDistinctEmploymentTypes());
+        model.addAttribute("industries", jobRepo.findDistinctIndustries());
 
-        // Preserve filter states in model
         model.addAttribute("keyword", keyword);
         model.addAttribute("location", location);
         model.addAttribute("employmentType", employmentType);
@@ -77,8 +74,8 @@ public class JobController {
             Authentication auth,
             Model model) {
 
-        Job job = jobRepository.findJobDetailWithAssociations(id)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tin tuyển dụng"));
+        Job job = jobRepo.findJobDetailWithAssociations(id)
+                .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
         if (job.getStatus() != JobStatus.APPROVED) {
             boolean canView = false;
@@ -96,14 +93,13 @@ public class JobController {
                 }
             }
             if (!canView) {
-                throw new IllegalArgumentException("Không tìm thấy tin tuyển dụng hoặc chưa được duyệt");
+                throw new IllegalArgumentException("Job not found or not approved yet");
             }
         }
 
         model.addAttribute("job", job);
 
-        // Fetch similar jobs by same industry (limit to 3)
-        List<Job> similarJobs = jobRepository.searchApprovedJobs(null, null, null, 
+        List<Job> similarJobs = jobRepo.searchApprovedJobs(null, null, null, 
                 job.getIndustry() != null ? job.getIndustry().getIndustryName() : null, 
                 PageRequest.of(0, 4))
                 .getContent().stream()
@@ -114,8 +110,8 @@ public class JobController {
 
         if (auth != null && auth.isAuthenticated()) {
             String email = auth.getName();
-            userRepository.findByEmail(email).ifPresent(user -> {
-                candidateRepository.findByUser_UserId(user.getUserId()).ifPresent(c -> {
+            userRepo.findByEmail(email).ifPresent(user -> {
+                candidateRepo.findByUser_UserId(user.getUserId()).ifPresent(c -> {
                     model.addAttribute("hasApplied", applicationService.hasApplied(c.getCandidateId(), id));
                     model.addAttribute("isSaved", savedJobService.isSaved(c.getCandidateId(), id));
                     model.addAttribute("cvList", c.getCvList());
@@ -140,7 +136,7 @@ public class JobController {
         try {
             Integer candidateId = securityUtils.getCandidateId(auth);
             applicationService.apply(candidateId, id, cvId);
-            redirectAttributes.addFlashAttribute("success", "Nộp hồ sơ ứng tuyển thành công!");
+            redirectAttributes.addFlashAttribute("success", "Applied successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
@@ -162,10 +158,10 @@ public class JobController {
             Integer candidateId = securityUtils.getCandidateId(auth);
             if (savedJobService.isSaved(candidateId, id)) {
                 savedJobService.unsaveJob(candidateId, id);
-                redirectAttributes.addFlashAttribute("success", "Đã bỏ lưu việc làm.");
+                redirectAttributes.addFlashAttribute("success", "Job unsaved successfully.");
             } else {
                 savedJobService.saveJob(candidateId, id);
-                redirectAttributes.addFlashAttribute("success", "Đã lưu việc làm thành công.");
+                redirectAttributes.addFlashAttribute("success", "Job saved successfully.");
             }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

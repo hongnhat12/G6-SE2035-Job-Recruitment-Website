@@ -6,10 +6,10 @@ import com.se2035.jrw.entity.Candidate;
 import com.se2035.jrw.entity.Job;
 import com.se2035.jrw.enums.ApplicationStatus;
 import com.se2035.jrw.enums.JobStatus;
-import com.se2035.jrw.repository.ApplicationRepository;
-import com.se2035.jrw.repository.CVRepository;
-import com.se2035.jrw.repository.CandidateRepository;
-import com.se2035.jrw.repository.JobRepository;
+import com.se2035.jrw.repository.ApplicationRepo;
+import com.se2035.jrw.repository.CVRepo;
+import com.se2035.jrw.repository.CandidateRepo;
+import com.se2035.jrw.repository.JobRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,17 +20,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ApplicationService {
 
-    private final ApplicationRepository applicationRepository;
-    private final CandidateRepository candidateRepository;
-    private final JobRepository jobRepository;
-    private final CVRepository cvRepository;
+    private final ApplicationRepo applicationRepo;
+    private final CandidateRepo candidateRepo;
+    private final JobRepo jobRepo;
+    private final CVRepo cvRepo;
 
     @Transactional
     public Application apply(Integer candidateId, Integer jobId, Integer cvId) {
-        Candidate candidate = candidateRepository.findById(candidateId)
+        Candidate candidate = candidateRepo.findById(candidateId)
                 .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
 
-        Job job = jobRepository.findById(jobId)
+        Job job = jobRepo.findById(jobId)
                 .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
         if (job.getStatus() != JobStatus.APPROVED) {
@@ -41,11 +41,11 @@ public class ApplicationService {
             throw new IllegalStateException("The deadline for this job has passed");
         }
 
-        if (applicationRepository.existsByCandidateAndJob(candidate, job)) {
+        if (applicationRepo.existsByCandidateAndJob(candidate, job)) {
             throw new IllegalStateException("You have already applied for this job");
         }
 
-        CV cv = cvRepository.findById(cvId)
+        CV cv = cvRepo.findById(cvId)
                 .orElseThrow(() -> new IllegalArgumentException("CV not found"));
 
         if (!cv.getCandidate().getCandidateId().equals(candidateId)) {
@@ -59,18 +59,18 @@ public class ApplicationService {
                 .status(ApplicationStatus.PENDING)
                 .build();
 
-        return applicationRepository.save(application);
+        return applicationRepo.save(application);
     }
 
     public Page<Application> getMyApplications(Integer candidateId, Pageable pageable) {
-        Candidate candidate = candidateRepository.findById(candidateId)
+        Candidate candidate = candidateRepo.findById(candidateId)
                 .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
-        return applicationRepository.findByCandidateOrderByAppliedAtDesc(candidate, pageable);
+        return applicationRepo.findByCandidateOrderByAppliedAtDesc(candidate, pageable);
     }
 
     @Transactional
     public void withdraw(Integer applicationId, Integer candidateId) {
-        Application application = applicationRepository.findById(applicationId)
+        Application application = applicationRepo.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Application not found"));
 
         if (!application.getCandidate().getCandidateId().equals(candidateId)) {
@@ -82,13 +82,13 @@ public class ApplicationService {
         }
 
         application.setStatus(ApplicationStatus.WITHDRAWN);
-        applicationRepository.save(application);
+        applicationRepo.save(application);
     }
 
     public boolean hasApplied(Integer candidateId, Integer jobId) {
-        return candidateRepository.findById(candidateId)
-                .flatMap(c -> jobRepository.findById(jobId)
-                        .map(j -> applicationRepository.existsByCandidateAndJob(c, j)))
+        return candidateRepo.findById(candidateId)
+                .flatMap(c -> jobRepo.findById(jobId)
+                        .map(j -> applicationRepo.existsByCandidateAndJob(c, j)))
                 .orElse(false);
     }
 }

@@ -2,7 +2,7 @@ package com.se2035.jrw.controller;
 
 import com.se2035.jrw.entity.Job;
 import com.se2035.jrw.entity.User;
-import com.se2035.jrw.repository.UserRepository;
+import com.se2035.jrw.repository.UserRepo;
 import com.se2035.jrw.service.JobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,12 +20,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminJobController {
 
     private final JobService jobService;
-    private final UserRepository userRepository;
+    private final UserRepo userRepo;
     private User getCurrentAdmin(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) {
             throw new IllegalStateException("You are not logged in");
         }
-        return userRepository.findByEmail(auth.getName())
+        return userRepo.findByEmail(auth.getName())
                 .orElseThrow(() -> new IllegalStateException("Admin not found"));
     }
 
