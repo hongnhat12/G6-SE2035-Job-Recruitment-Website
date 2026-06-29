@@ -42,15 +42,22 @@ public class SecurityConfig {
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/", true)
                     .successHandler((request, response, authentication) -> {
-                        for (var authority : authentication.getAuthorities()) {
-                            if (authority.getAuthority().equals("ROLE_ADMIN")) {
-                                response.sendRedirect("/admin/dashboard");
-                                return;
-                            }
+
+                        if (authentication.getAuthorities().stream()
+                                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+
+                            response.sendRedirect("/admin/dashboard");
+
+                        } else if (authentication.getAuthorities().stream()
+                                .anyMatch(a -> a.getAuthority().equals("ROLE_RECRUITER"))) {
+
+                            response.sendRedirect("/recruiter/dashboard");
+
+                        } else {
+
+                            response.sendRedirect("/candidate/dashboard");
                         }
-                        response.sendRedirect("/");
                     })
                 .permitAll()
             )
