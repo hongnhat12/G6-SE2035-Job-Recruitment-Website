@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{fragments :: head(${job.jobId != null ? 'Update Job Posting' : 'Post New Job'})}"></head>
+<head th:replace="~{fragments :: head(${job.jobId != null} ? 'Update Job Posting' : 'Post New Job')}"></head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
 
 <nav th:replace="~{fragments :: navbar}"></nav>
@@ -54,7 +54,7 @@
                     <select name="industryId" id="industryId" required
                             class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white shadow-sm">
                         <option value="">-- Select Industry --</option>
-                        <option th:each="ind : ${industries}" th:value="${ind.industryId}" th:text="${ind.industryName}" th:selected="${job.industry != null and job.industry.industryId == ind.industryId}"></option>
+                        <option th:each="ind : ${industries}" th:value="${ind.industryId}" th:text="${ind.industryName}" th:selected="${job.industry?.industryId == ind.industryId}"></option>
                     </select>
                 </div>
 
@@ -62,7 +62,7 @@
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Minimum Salary (VND) <span class="text-red-500">*</span></label>
                     <input type="number" name="salaryMin" id="salaryMin" th:value="${job.salaryMin != null ? job.salaryMin.longValue() : ''}" required
-                           min="0" step="100000"
+                           min="0" step="any"
                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 shadow-sm"
                            placeholder="e.g. 10000000">
                 </div>
@@ -71,7 +71,7 @@
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Maximum Salary (VND) <span class="text-red-500">*</span></label>
                     <input type="number" name="salaryMax" id="salaryMax" th:value="${job.salaryMax != null ? job.salaryMax.longValue() : ''}" required
-                           min="0" step="100000"
+                           min="0" step="any"
                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 shadow-sm"
                            placeholder="e.g. 30000000">
                 </div>
@@ -146,17 +146,38 @@
 </main>
 
 <script>
-function validateForm() {
-    const errBox = document.getElementById('validationError');
-    const errMsg = document.getElementById('validationMsg');
+function clearErrors() {
+    const inputs = document.querySelectorAll('#jobForm input, #jobForm select, #jobForm textarea');
+    inputs.forEach(el => {
+        el.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+        el.classList.add('border-gray-200', 'focus:ring-teal-500', 'focus:border-teal-500');
+    });
+    const errMsgs = document.querySelectorAll('.field-error-msg');
+    errMsgs.forEach(msg => msg.remove());
+}
 
-    function showErr(msg) {
-        errMsg.textContent = msg;
-        errBox.classList.remove('hidden');
-        errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return false;
+function showFieldError(fieldId, msg) {
+    const el = document.getElementById(fieldId);
+    if (!el) return false;
+    
+    el.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+    el.classList.remove('border-gray-200', 'focus:ring-teal-500', 'focus:border-teal-500');
+    
+    let errEl = el.parentNode.querySelector('.field-error-msg');
+    if (!errEl) {
+        errEl = document.createElement('p');
+        errEl.className = 'text-xs text-red-600 mt-1.5 font-medium field-error-msg flex items-center gap-1';
+        el.parentNode.appendChild(errEl);
     }
-    errBox.classList.add('hidden');
+    errEl.innerHTML = `<i class="fa-solid fa-circle-exclamation flex-shrink-0 text-xs"></i> ${msg}`;
+    
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.focus();
+    return false;
+}
+
+function validateForm() {
+    clearErrors();
 
     const requiredFields = [
         { id: 'title',              label: 'Job Title' },
@@ -175,20 +196,32 @@ function validateForm() {
     for (const f of requiredFields) {
         const el = document.getElementById(f.id);
         if (!el || !el.value.trim()) {
-            return showErr('Please fill in required field: "' + f.label + '"');
+            return showFieldError(f.id, 'Please fill in this required field');
         }
     }
 
-    const salaryMin = parseFloat(document.getElementById('salaryMin').value);
-    const salaryMax = parseFloat(document.getElementById('salaryMax').value);
-    if (salaryMin < 0) return showErr('Minimum salary must be a positive number!');
-    if (salaryMax < 0) return showErr('Maximum salary must be a positive number!');
-    if (salaryMax <= salaryMin) return showErr('Maximum salary must be greater than minimum salary!');
+    const salaryMinEl = document.getElementById('salaryMin');
+    const salaryMaxEl = document.getElementById('salaryMax');
+    const salaryMin = parseFloat(salaryMinEl.value);
+    const salaryMax = parseFloat(salaryMaxEl.value);
+    
+    if (salaryMin < 0) {
+        return showFieldError('salaryMin', 'Minimum salary must be a positive number!');
+    }
+    if (salaryMax < 0) {
+        return showFieldError('salaryMax', 'Maximum salary must be a positive number!');
+    }
+    if (salaryMax <= salaryMin) {
+        return showFieldError('salaryMax', 'Maximum salary must be greater than minimum salary!');
+    }
 
+    const expiredDateEl = document.getElementById('expiredDate');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const expired = new Date(document.getElementById('expiredDate').value);
-    if (expired <= today) return showErr('Deadline must be after today!');
+    const expired = new Date(expiredDateEl.value);
+    if (expired <= today) {
+        return showFieldError('expiredDate', 'Deadline must be after today!');
+    }
 
     return true;
 }

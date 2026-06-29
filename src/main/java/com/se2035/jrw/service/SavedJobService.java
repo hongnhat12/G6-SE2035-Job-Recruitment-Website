@@ -29,13 +29,13 @@ public class SavedJobService {
         }
 
         Candidate candidate = candidateRepository.findById(candidateId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy candidate"));
+                .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
 
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tin tuyển dụng"));
+                .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
         if (job.getStatus() != JobStatus.APPROVED) {
-            throw new IllegalStateException("Chỉ có thể lưu tin tuyển dụng đang hoạt động");
+            throw new IllegalStateException("Only active job postings can be saved");
         }
 
         SavedJob savedJob = SavedJob.builder()
@@ -54,7 +54,7 @@ public class SavedJobService {
 
     public Page<SavedJob> getSavedJobs(Integer candidateId, Pageable pageable) {
         Candidate candidate = candidateRepository.findById(candidateId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy candidate"));
+                .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
         return savedJobRepository.findByCandidateOrderBySavedAtDesc(candidate, pageable);
     }
 

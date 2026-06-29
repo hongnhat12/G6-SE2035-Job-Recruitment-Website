@@ -28,28 +28,28 @@ public class ApplicationService {
     @Transactional
     public Application apply(Integer candidateId, Integer jobId, Integer cvId) {
         Candidate candidate = candidateRepository.findById(candidateId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy candidate"));
+                .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
 
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tin tuyển dụng"));
+                .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
         if (job.getStatus() != JobStatus.APPROVED) {
-            throw new IllegalStateException("Tin tuyển dụng này không còn nhận hồ sơ");
+            throw new IllegalStateException("This job is no longer accepting applications");
         }
 
         if (job.getDeadline() != null && job.getDeadline().isBefore(java.time.LocalDate.now())) {
-            throw new IllegalStateException("Tin tuyển dụng đã hết hạn nộp hồ sơ");
+            throw new IllegalStateException("The deadline for this job has passed");
         }
 
         if (applicationRepository.existsByCandidateAndJob(candidate, job)) {
-            throw new IllegalStateException("Bạn đã nộp hồ sơ cho vị trí này rồi");
+            throw new IllegalStateException("You have already applied for this job");
         }
 
         CV cv = cvRepository.findById(cvId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy CV"));
+                .orElseThrow(() -> new IllegalArgumentException("CV not found"));
 
         if (!cv.getCandidate().getCandidateId().equals(candidateId)) {
-            throw new IllegalStateException("CV không hợp lệ");
+            throw new IllegalStateException("Invalid CV");
         }
 
         Application application = Application.builder()
@@ -64,21 +64,21 @@ public class ApplicationService {
 
     public Page<Application> getMyApplications(Integer candidateId, Pageable pageable) {
         Candidate candidate = candidateRepository.findById(candidateId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy candidate"));
+                .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
         return applicationRepository.findByCandidateOrderByAppliedAtDesc(candidate, pageable);
     }
 
     @Transactional
     public void withdraw(Integer applicationId, Integer candidateId) {
         Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn ứng tuyển"));
+                .orElseThrow(() -> new IllegalArgumentException("Application not found"));
 
         if (!application.getCandidate().getCandidateId().equals(candidateId)) {
-            throw new IllegalStateException("Bạn không có quyền thực hiện thao tác này");
+            throw new IllegalStateException("You do not have permission to perform this action");
         }
 
         if (application.getStatus() != ApplicationStatus.PENDING) {
-            throw new IllegalStateException("Chỉ có thể rút đơn khi trạng thái là Đang chờ duyệt");
+            throw new IllegalStateException("You can only withdraw applications that are PENDING");
         }
 
         application.setStatus(ApplicationStatus.WITHDRAWN);

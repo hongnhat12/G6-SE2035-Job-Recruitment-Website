@@ -9,29 +9,32 @@
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <!-- Admin Sidebar -->
         <aside class="col-span-1">
             <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-                <div class="bg-gray-900 text-white py-4 px-6">
+                <div class="bg-teal-600 text-white py-4 px-6">
                     <h3 class="font-bold flex items-center text-sm">
                         <i class="fa-solid fa-gauge mr-2"></i> Admin Control
                     </h3>
                 </div>
                 <div class="divide-y divide-gray-50">
+                    <a th:href="@{/admin/dashboard}" class="block py-4 px-6 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center transition">
+                        <i class="fa-solid fa-chart-pie mr-3 text-gray-400"></i> Dashboard
+                    </a>
                     <a th:href="@{/admin/companies}" class="block py-4 px-6 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center transition">
                         <i class="fa-solid fa-building mr-3 text-gray-400"></i> Companies
                     </a>
                     <a th:href="@{/admin/industries}" class="block py-4 px-6 text-sm font-bold text-teal-600 bg-teal-50 flex items-center">
                         <i class="fa-solid fa-tags mr-3 text-teal-600"></i> Industries
                     </a>
+                    <a th:href="@{/admin/jobs/pending}" class="block py-4 px-6 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center transition">
+                        <i class="fa-solid fa-circle-check mr-3 text-gray-400"></i> Job Approvals
+                    </a>
                 </div>
             </div>
         </aside>
 
-        <!-- Main Panel -->
         <div class="col-span-1 lg:col-span-3 space-y-6">
             <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-                <!-- Header -->
                 <div class="border-b border-gray-100 py-6 px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">Industries</h1>
@@ -42,7 +45,6 @@
                     </a>
                 </div>
 
-                <!-- Search -->
                 <div class="bg-gray-50 py-4 px-8 border-b border-gray-100">
                     <form th:action="@{/admin/industries}" method="GET" class="flex flex-col sm:flex-row gap-3 items-center">
                         <div class="relative flex-grow w-full">
@@ -52,7 +54,7 @@
                             <input type="text" name="search" th:value="${search}" placeholder="Search industries by name..." 
                                    class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition text-sm">
                         </div>
-                        <button type="submit" class="w-full sm:w-auto bg-gray-900 hover:bg-gray-800 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition">
+                        <button type="submit" class="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition">
                             Search
                         </button>
                         <a th:if="${search}" th:href="@{/admin/industries}" class="text-sm text-teal-600 hover:underline">
@@ -61,7 +63,6 @@
                     </form>
                 </div>
 
-                <!-- Table -->
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-100">
                         <thead class="bg-gray-50">
@@ -69,7 +70,7 @@
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider" style="width: 100px">ID</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Industry Name</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Description</th>
-                                <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-55 bg-white">
@@ -79,7 +80,7 @@
                                     <div class="text-sm font-bold text-gray-900" th:text="${ind.industryName}">Technology</div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500" th:text="${ind.description}">Description</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-3">
                                     <a th:href="@{/admin/industries/edit/{id}(id=${ind.industryId})}" class="text-teal-600 hover:text-teal-900">Edit</a>
                                     <button th:data-id="${ind.industryId}" th:data-name="${ind.industryName}" onclick="openDeleteModal(this)" class="text-red-600 hover:text-red-900">Delete</button>
                                 </td>
@@ -94,7 +95,6 @@
                     </table>
                 </div>
 
-                <!-- Footer Pagination -->
                 <div th:if="${totalPages > 0}" class="border-t border-gray-100 py-5 px-8 flex justify-between items-center bg-gray-50">
                     <p class="text-sm text-gray-500">
                         Total items: <strong class="text-gray-900" th:text="${totalItems}">0</strong>
@@ -122,7 +122,6 @@
     </div>
 </main>
 
-<!-- Delete Modal -->
 <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-100">
         <div class="bg-red-600 p-6 text-white flex justify-between items-center">

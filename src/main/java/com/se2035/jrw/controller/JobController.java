@@ -77,8 +77,28 @@ public class JobController {
             Authentication auth,
             Model model) {
 
-        Job job = jobRepository.findByJobIdAndStatus(id, JobStatus.APPROVED)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tin tuyển dụng hoặc chưa được duyệt"));
+        Job job = jobRepository.findJobDetailWithAssociations(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tin tuyển dụng"));
+
+        if (job.getStatus() != JobStatus.APPROVED) {
+            boolean canView = false;
+            if (auth != null && auth.isAuthenticated()) {
+                boolean isAdmin = auth.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                if (isAdmin) {
+                    canView = true;
+                } else {
+                    String email = auth.getName();
+                    if (job.getRecruiter() != null && job.getRecruiter().getUser() != null 
+                            && email.equalsIgnoreCase(job.getRecruiter().getUser().getEmail())) {
+                        canView = true;
+                    }
+                }
+            }
+            if (!canView) {
+                throw new IllegalArgumentException("Không tìm thấy tin tuyển dụng hoặc chưa được duyệt");
+            }
+        }
 
         model.addAttribute("job", job);
 

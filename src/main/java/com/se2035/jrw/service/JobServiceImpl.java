@@ -17,6 +17,8 @@ import com.se2035.jrw.repository.JobRepo;
 import com.se2035.jrw.repository.RecruiterRepo;
 import com.se2035.jrw.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +27,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class JobServiceImpl implements JobService{
+public class JobServiceImpl implements JobService {
     private final JobRepo jobRepo;
     private final CompanyRepo companyRepo;
     private final RecruiterRepo recruiterRepo;
@@ -48,12 +50,12 @@ public class JobServiceImpl implements JobService{
         Industry industry = industryRepo.findById(req.getIndustryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Industry not found"));
 
-        if(!recruiter.getCompany().getCompanyId().equals(company.getCompanyId())) {
+        if (!recruiter.getCompany().getCompanyId().equals(company.getCompanyId())) {
             throw new BadRequestException("Recruiter must belong to company");
         }
-        if(req.getSalaryMin() != null && req.getSalaryMax() != null
+        if (req.getSalaryMin() != null && req.getSalaryMax() != null
                 && req.getSalaryMin().compareTo(req.getSalaryMax()) > 0) {
-                throw new BadRequestException("Salary min > max");
+            throw new BadRequestException("Salary min > max");
         }
 
         Job job = Job.builder()
@@ -83,11 +85,11 @@ public class JobServiceImpl implements JobService{
         Job job = jobRepo.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
 
-        if(job.getStatus() != JobStatus.PENDING && job.getStatus() != JobStatus.REJECTED) {
+        if (job.getStatus() != JobStatus.PENDING && job.getStatus() != JobStatus.REJECTED) {
             throw new BadRequestException("Only unapproved and undeleted jobs can be edited. " +
                     "Current status: " + job.getStatus());
         }
-        if(req.getSalaryMin() != null && req.getSalaryMax() != null
+        if (req.getSalaryMin() != null && req.getSalaryMax() != null
                 && req.getSalaryMin().compareTo(req.getSalaryMax()) > 0) {
             throw new BadRequestException("Salary min > max");
         }
@@ -130,6 +132,46 @@ public class JobServiceImpl implements JobService{
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
 
         job.setStatus(JobStatus.CLOSED);
+
+        return jobRepo.save(job);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Job> findPendingJobs(Pageable pageable) {
+        return jobRepo.findByStatus(JobStatus.PENDING, pageable);
+    }
+
+    @Override
+    @Transactional
+    public Job approveJob(Integer jobId, User adminUser) {
+        Job job = jobRepo.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+
+        if (job.getStatus() != JobStatus.PENDING) {
+            throw new BadRequestException("Only jobs with PENDING status can be approved");
+        }
+
+        job.setStatus(JobStatus.APPROVED);
+        job.setApprovedBy(adminUser);
+        job.setApprovedAt(LocalDateTime.now());
+
+        return jobRepo.save(job);
+    }
+
+    @Override
+    @Transactional
+    public Job rejectJob(Integer jobId, User adminUser) {
+        Job job = jobRepo.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+
+        if (job.getStatus() != JobStatus.PENDING) {
+            throw new BadRequestException("Only jobs with PENDING status can be rejected");
+        }
+
+        job.setStatus(JobStatus.REJECTED);
+        job.setApprovedBy(adminUser);
+        job.setApprovedAt(LocalDateTime.now());
 
         return jobRepo.save(job);
     }

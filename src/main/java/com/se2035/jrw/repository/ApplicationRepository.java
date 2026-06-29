@@ -7,12 +7,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ApplicationRepository extends JpaRepository<Application, Integer> {
 
-    @EntityGraph(attributePaths = {"job", "job.company", "cv"})
     Page<Application> findByCandidateOrderByAppliedAtDesc(Candidate candidate, Pageable pageable);
 
     Optional<Application> findByCandidateAndJob(Candidate candidate, Job job);
@@ -21,9 +22,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
 
     long countByJob(Job job);
 
-    @EntityGraph(attributePaths = {"job", "job.company", "candidate", "cv"})
-    java.util.List<Application> findByJob_Recruiter_RecruiterIdOrderByAppliedAtDesc(Integer recruiterId);
+    List<Application> findByJob_Recruiter_RecruiterIdOrderByAppliedAtDesc(Integer recruiterId);
 
-    @EntityGraph(attributePaths = {"job", "job.company", "candidate", "cv"})
-    java.util.List<Application> findByJob_JobIdOrderByAppliedAtDesc(Integer jobId);
+    List<Application> findByJob_JobIdOrderByAppliedAtDesc(Integer jobId);
+
+    @Query("SELECT a.status, COUNT(a) FROM Application a GROUP BY a.status")
+    List<Object[]> countApplicationsByStatus();
 }

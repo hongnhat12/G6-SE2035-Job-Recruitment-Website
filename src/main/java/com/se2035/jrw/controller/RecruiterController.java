@@ -88,6 +88,10 @@ public class RecruiterController {
             Industry industry = industryRepo.findById(industryId)
                     .orElseThrow(() -> new IllegalArgumentException("Ngành nghề không hợp lệ"));
 
+            if (salaryMin != null && salaryMax != null && salaryMin.compareTo(salaryMax) > 0) {
+                throw new IllegalArgumentException("Minimum salary cannot be greater than maximum salary");
+            }
+
             Job job = Job.builder()
                     .title(title)
                     .recruiter(recruiter)
@@ -165,6 +169,10 @@ public class RecruiterController {
 
             Industry industry = industryRepo.findById(industryId)
                     .orElseThrow(() -> new IllegalArgumentException("Ngành nghề không hợp lệ"));
+
+            if (salaryMin != null && salaryMax != null && salaryMin.compareTo(salaryMax) > 0) {
+                throw new IllegalArgumentException("Minimum salary cannot be greater than maximum salary");
+            }
 
             job.setTitle(title);
             job.setIndustry(industry);
