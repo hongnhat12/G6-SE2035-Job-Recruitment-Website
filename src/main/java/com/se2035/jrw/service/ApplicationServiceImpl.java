@@ -153,4 +153,26 @@ public class ApplicationServiceImpl implements ApplicationService {
                         .map(j -> applicationRepo.existsByCandidateAndJob(c, j)))
                 .orElse(false);
     }
+
+    @Override
+    public Application findById(Integer id) {
+        return applicationRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found"));
+    }
+
+    @Override
+    public List<Application> findAll() {
+        return applicationRepo.findAll();
+    }
+
+    @Override
+    public List<Application> findByRecruiterId(Integer recruiterId) {
+        return applicationRepo.findByJob_Recruiter_RecruiterIdOrderByAppliedAtDesc(recruiterId);
+    }
+
+    @Override
+    @Transactional
+    public Application save(Application application) {
+        return applicationRepo.save(application);
+    }
 }

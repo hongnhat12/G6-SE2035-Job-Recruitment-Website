@@ -86,4 +86,8 @@ public interface JobRepo extends JpaRepository<Job, Integer>, JpaSpecificationEx
     List<Object[]> countJobsByEmploymentTypeAndStatus(@Param("status") JobStatus status);
 
     List<Job> findByRecruiterId(Integer recruiterId);
+
+    List<Job> findByRecruiterRecruiterIdAndStatusNot(
+            Integer recruiterId,
+            JobStatus status);
 }

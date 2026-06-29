@@ -21,4 +21,8 @@ public interface ApplicationService {
     Application shortlist(Integer applicationId);
     Application reject(Integer applicationId);
     Application hire(Integer applicationId);
+    Application findById(Integer id);
+    List<Application> findAll();
+    List<Application> findByRecruiterId(Integer recruiterId);
+    Application save(Application application);
 }

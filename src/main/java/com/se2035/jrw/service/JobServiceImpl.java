@@ -19,6 +19,7 @@ import com.se2035.jrw.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -185,5 +186,18 @@ public class JobServiceImpl implements JobService{
         List<Job> jobs = jobRepo.findByRecruiterId(recruiterId);
 
         return jobs;
+    }
+
+    @Override
+    public Job findById(Integer id) {
+        return jobRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+    }
+
+    @Override
+    public List<Job> getMyJobs(Recruiter recruiter) {
+        return jobRepo.findByRecruiterRecruiterIdAndStatusNot(
+                recruiter.getRecruiterId(),
+                JobStatus.DELETED);
     }
 }
