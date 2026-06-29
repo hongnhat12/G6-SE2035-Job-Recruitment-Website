@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: head(${job.jobId != null} ? 'Update Job Posting' : 'Post New Job')}"></head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+
+<nav th:replace="~{fragments :: navbar}"></nav>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+        <div class="bg-teal-600 px-8 py-10 text-white">
+            <h1 class="text-3xl font-extrabold" th:text="${job.jobId != null ? 'Update Job Posting' : 'Post New Job'}">Post New Job</h1>
+            <p class="text-teal-100 mt-2">Fill in all information to attract the best talents</p>
+        </div>
+
+        <!-- Validation Error Alert -->
+        <div id="validationError" class="mx-8 mt-6 bg-red-50 border-l-4 border-red-500 p-4 text-red-700 text-sm rounded-lg hidden flex items-center gap-2">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span id="validationMsg"></span>
+        </div>
+
+        <form id="jobForm" th:action="${job.jobId != null ? '/jobs/edit' : '/jobs/create'}" method="POST"
+              class="p-8 space-y-8" onsubmit="return validateForm()">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="jobId" th:if="${job.jobId != null}" th:value="${job.jobId}">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Title -->
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Job Title <span class="text-red-500">*</span></label>
+                    <input type="text" name="title" id="title" th:value="${job.title}" required
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-sm"
+                           placeholder="e.g. Senior Java Developer">
+                </div>
+
+                <!-- Employment Type -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Employment Type <span class="text-red-500">*</span></label>
+                    <select name="employmentType" id="employmentType" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white shadow-sm">
+                        <option value="">-- Select Type --</option>
+                        <option value="Full-time" th:selected="${job.employmentType == 'Full-time'}">Full-time</option>
+                        <option value="Part-time" th:selected="${job.employmentType == 'Part-time'}">Part-time</option>
+                        <option value="Contract" th:selected="${job.employmentType == 'Contract'}">Contract</option>
+                        <option value="Internship" th:selected="${job.employmentType == 'Internship'}">Internship</option>
+                        <option value="Remote" th:selected="${job.employmentType == 'Remote'}">Remote</option>
+                    </select>
+                </div>
+
+                <!-- Industry -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Industry Category <span class="text-red-500">*</span></label>
+                    <select name="industryId" id="industryId" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white shadow-sm">
+                        <option value="">-- Select Industry --</option>
+                        <option th:each="ind : ${industries}" th:value="${ind.industryId}" th:text="${ind.industryName}" th:selected="${job.industry?.industryId == ind.industryId}"></option>
+                    </select>
+                </div>
+
+                <!-- Salary Min -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Minimum Salary (VND) <span class="text-red-500">*</span></label>
+                    <input type="number" name="salaryMin" id="salaryMin" th:value="${job.salaryMin != null ? job.salaryMin.longValue() : ''}" required
+                           min="0" step="any"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 shadow-sm"
+                           placeholder="e.g. 10000000">
+                </div>
+
+                <!-- Salary Max -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Maximum Salary (VND) <span class="text-red-500">*</span></label>
+                    <input type="number" name="salaryMax" id="salaryMax" th:value="${job.salaryMax != null ? job.salaryMax.longValue() : ''}" required
+                           min="0" step="any"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 shadow-sm"
+                           placeholder="e.g. 30000000">
+                </div>
+
+                <!-- Location -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Location <span class="text-red-500">*</span></label>
+                    <input type="text" name="location" id="location" th:value="${job.location}" required
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-sm"
+                           placeholder="e.g. Hanoi">
+                </div>
+
+                <!-- Experience required -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Experience Required (Years) <span class="text-red-500">*</span></label>
+                    <input type="number" name="experienceRequired" id="experienceRequired" th:value="${job.experienceRequired}" required
+                           min="0"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 shadow-sm"
+                           placeholder="e.g. 2">
+                </div>
+
+                <!-- Skills -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Skills (separated by commas) <span class="text-red-500">*</span></label>
+                    <input type="text" name="requiredSkills" id="requiredSkills" th:value="${job.requiredSkills}" required
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none transition shadow-sm"
+                           placeholder="e.g. Java, Spring Boot, MySQL">
+                </div>
+
+                <!-- Deadline -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Application Deadline <span class="text-red-500">*</span></label>
+                    <input type="date" name="deadlineStr" id="expiredDate" required
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 shadow-sm"
+                           th:value="${job.deadline}">
+                </div>
+
+                <!-- Description -->
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Job Description <span class="text-red-500">*</span></label>
+                    <textarea name="description" id="description" rows="5" required
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 shadow-sm"
+                              placeholder="Detailed responsibilities and duties..." th:text="${job.description}"></textarea>
+                </div>
+
+                <!-- Requirement -->
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Job Requirements <span class="text-red-500">*</span></label>
+                    <textarea name="requirement" id="requirement" rows="5" required
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 shadow-sm"
+                              placeholder="Required skills, qualifications, experience..." th:text="${job.requirement}"></textarea>
+                </div>
+
+                <!-- Benefit -->
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Benefits & Compensations <span class="text-red-500">*</span></label>
+                    <textarea name="benefit" id="benefit" rows="5" required
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 shadow-sm"
+                              placeholder="Bonuses, leave, health insurance..." th:text="${job.benefit}"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 pt-6 border-t border-gray-100">
+                <a th:href="@{/jobs/manage}" class="px-6 py-3 text-gray-600 font-bold hover:text-gray-900 transition mt-2">Cancel</a>
+                <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-10 rounded-xl transition shadow-lg transform hover:-translate-y-1"
+                        th:text="${job.jobId != null ? 'Save Changes' : 'Post Job'}">
+                    Post Job
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+function clearErrors() {
+    const inputs = document.querySelectorAll('#jobForm input, #jobForm select, #jobForm textarea');
+    inputs.forEach(el => {
+        el.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+        el.classList.add('border-gray-200', 'focus:ring-teal-500', 'focus:border-teal-500');
+    });
+    const errMsgs = document.querySelectorAll('.field-error-msg');
+    errMsgs.forEach(msg => msg.remove());
+}
+
+function showFieldError(fieldId, msg) {
+    const el = document.getElementById(fieldId);
+    if (!el) return false;
+    
+    el.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+    el.classList.remove('border-gray-200', 'focus:ring-teal-500', 'focus:border-teal-500');
+    
+    let errEl = el.parentNode.querySelector('.field-error-msg');
+    if (!errEl) {
+        errEl = document.createElement('p');
+        errEl.className = 'text-xs text-red-600 mt-1.5 font-medium field-error-msg flex items-center gap-1';
+        el.parentNode.appendChild(errEl);
+    }
+    errEl.innerHTML = `<i class="fa-solid fa-circle-exclamation flex-shrink-0 text-xs"></i> ${msg}`;
+    
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.focus();
+    return false;
+}
+
+function validateForm() {
+    clearErrors();
+
+    const requiredFields = [
+        { id: 'title',              label: 'Job Title' },
+        { id: 'employmentType',     label: 'Employment Type' },
+        { id: 'industryId',         label: 'Industry Category' },
+        { id: 'salaryMin',          label: 'Minimum Salary' },
+        { id: 'salaryMax',          label: 'Maximum Salary' },
+        { id: 'location',           label: 'Location' },
+        { id: 'experienceRequired', label: 'Experience Required' },
+        { id: 'requiredSkills',     label: 'Skills Required' },
+        { id: 'expiredDate',        label: 'Deadline' },
+        { id: 'description',        label: 'Job Description' },
+        { id: 'requirement',        label: 'Job Requirements' },
+        { id: 'benefit',            label: 'Benefits' }
+    ];
+    for (const f of requiredFields) {
+        const el = document.getElementById(f.id);
+        if (!el || !el.value.trim()) {
+            return showFieldError(f.id, 'Please fill in this required field');
+        }
+    }
+
+    const salaryMinEl = document.getElementById('salaryMin');
+    const salaryMaxEl = document.getElementById('salaryMax');
+    const salaryMin = parseFloat(salaryMinEl.value);
+    const salaryMax = parseFloat(salaryMaxEl.value);
+    
+    if (salaryMin < 0) {
+        return showFieldError('salaryMin', 'Minimum salary must be a positive number!');
+    }
+    if (salaryMax < 0) {
+        return showFieldError('salaryMax', 'Maximum salary must be a positive number!');
+    }
+    if (salaryMax <= salaryMin) {
+        return showFieldError('salaryMax', 'Maximum salary must be greater than minimum salary!');
+    }
+
+    const expiredDateEl = document.getElementById('expiredDate');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expired = new Date(expiredDateEl.value);
+    if (expired <= today) {
+        return showFieldError('expiredDate', 'Deadline must be after today!');
+    }
+
+    return true;
+}
+
+(function() {
+    const el = document.getElementById('expiredDate');
+    if (el) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        el.min = tomorrow.toISOString().split('T')[0];
+    }
+})();
+</script>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+
+</body>
+</html>
