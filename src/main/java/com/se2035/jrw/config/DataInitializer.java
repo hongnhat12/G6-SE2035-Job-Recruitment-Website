@@ -40,23 +40,23 @@ public class DataInitializer implements CommandLineRunner {
         // 1. Create Users (1 admin, 4 recruiters, 5 candidates)
         User admin = User.builder()
                 .email("admin@joboard.io")
-                .passwordHash("$2a$10$Xl0yhvzLIaJCDdKBS0Mu9eAlSLtPRZ.U5jxFbgLV9bAcBkVVqxW5e") // Password@123
+                .passwordHash("$2a$10$U946dAuOxDLmELSPu3SIBebHgfmJH9pbc9XXbH34RMQ82u1rhgcSm") // Password@123
                 .role(UserRole.ADMIN)
                 .status(UserStatus.ACTIVE)
                 .build();
         userRepo.save(admin);
 
-        User rUser1 = User.builder().email("recruiter.minh@fpt.com.vn").passwordHash("$2a$10$Xl0yhvzLIaJCDdKBS0Mu9eAlSLtPRZ.U5jxFbgLV9bAcBkVVqxW5e").role(UserRole.RECRUITER).status(UserStatus.ACTIVE).build();
-        User rUser2 = User.builder().email("recruiter.lan@vng.com.vn").passwordHash("$2a$10$Xl0yhvzLIaJCDdKBS0Mu9eAlSLtPRZ.U5jxFbgLV9bAcBkVVqxW5e").role(UserRole.RECRUITER).status(UserStatus.ACTIVE).build();
-        User rUser3 = User.builder().email("recruiter.duc@momo.vn").passwordHash("$2a$10$Xl0yhvzLIaJCDdKBS0Mu9eAlSLtPRZ.U5jxFbgLV9bAcBkVVqxW5e").role(UserRole.RECRUITER).status(UserStatus.ACTIVE).build();
-        User rUser4 = User.builder().email("recruiter.hoa@tiki.vn").passwordHash("$2a$10$Xl0yhvzLIaJCDdKBS0Mu9eAlSLtPRZ.U5jxFbgLV9bAcBkVVqxW5e").role(UserRole.RECRUITER).status(UserStatus.ACTIVE).build();
+        User rUser1 = User.builder().email("recruiter.minh@fpt.com.vn").passwordHash("$2a$10$U946dAuOxDLmELSPu3SIBebHgfmJH9pbc9XXbH34RMQ82u1rhgcSm").role(UserRole.RECRUITER).status(UserStatus.ACTIVE).build();
+        User rUser2 = User.builder().email("recruiter.lan@vng.com.vn").passwordHash("$2a$10$U946dAuOxDLmELSPu3SIBebHgfmJH9pbc9XXbH34RMQ82u1rhgcSm").role(UserRole.RECRUITER).status(UserStatus.ACTIVE).build();
+        User rUser3 = User.builder().email("recruiter.duc@momo.vn").passwordHash("$2a$10$U946dAuOxDLmELSPu3SIBebHgfmJH9pbc9XXbH34RMQ82u1rhgcSm").role(UserRole.RECRUITER).status(UserStatus.ACTIVE).build();
+        User rUser4 = User.builder().email("recruiter.hoa@tiki.vn").passwordHash("$2a$10$U946dAuOxDLmELSPu3SIBebHgfmJH9pbc9XXbH34RMQ82u1rhgcSm").role(UserRole.RECRUITER).status(UserStatus.ACTIVE).build();
         userRepo.saveAll(Arrays.asList(rUser1, rUser2, rUser3, rUser4));
 
-        User cUser1 = User.builder().email("nguyen.tuan@gmail.com").passwordHash("$2a$10$Xl0yhvzLIaJCDdKBS0Mu9eAlSLtPRZ.U5jxFbgLV9bAcBkVVqxW5e").role(UserRole.CANDIDATE).status(UserStatus.ACTIVE).build();
-        User cUser2 = User.builder().email("tran.mai@gmail.com").passwordHash("$2a$10$Xl0yhvzLIaJCDdKBS0Mu9eAlSLtPRZ.U5jxFbgLV9bAcBkVVqxW5e").role(UserRole.CANDIDATE).status(UserStatus.ACTIVE).build();
-        User cUser3 = User.builder().email("pham.khoa@gmail.com").passwordHash("$2a$10$Xl0yhvzLIaJCDdKBS0Mu9eAlSLtPRZ.U5jxFbgLV9bAcBkVVqxW5e").role(UserRole.CANDIDATE).status(UserStatus.ACTIVE).build();
-        User cUser4 = User.builder().email("le.bich@gmail.com").passwordHash("$2a$10$Xl0yhvzLIaJCDdKBS0Mu9eAlSLtPRZ.U5jxFbgLV9bAcBkVVqxW5e").role(UserRole.CANDIDATE).status(UserStatus.ACTIVE).build();
-        User cUser5 = User.builder().email("hoang.son@gmail.com").passwordHash("$2a$10$Xl0yhvzLIaJCDdKBS0Mu9eAlSLtPRZ.U5jxFbgLV9bAcBkVVqxW5e").role(UserRole.CANDIDATE).status(UserStatus.ACTIVE).build();
+        User cUser1 = User.builder().email("nguyen.tuan@gmail.com").passwordHash("$2a$10$U946dAuOxDLmELSPu3SIBebHgfmJH9pbc9XXbH34RMQ82u1rhgcSm").role(UserRole.CANDIDATE).status(UserStatus.ACTIVE).build();
+        User cUser2 = User.builder().email("tran.mai@gmail.com").passwordHash("$2a$10$U946dAuOxDLmELSPu3SIBebHgfmJH9pbc9XXbH34RMQ82u1rhgcSm").role(UserRole.CANDIDATE).status(UserStatus.ACTIVE).build();
+        User cUser3 = User.builder().email("pham.khoa@gmail.com").passwordHash("$2a$10$U946dAuOxDLmELSPu3SIBebHgfmJH9pbc9XXbH34RMQ82u1rhgcSm").role(UserRole.CANDIDATE).status(UserStatus.ACTIVE).build();
+        User cUser4 = User.builder().email("le.bich@gmail.com").passwordHash("$2a$10$U946dAuOxDLmELSPu3SIBebHgfmJH9pbc9XXbH34RMQ82u1rhgcSm").role(UserRole.CANDIDATE).status(UserStatus.ACTIVE).build();
+        User cUser5 = User.builder().email("hoang.son@gmail.com").passwordHash("$2a$10$U946dAuOxDLmELSPu3SIBebHgfmJH9pbc9XXbH34RMQ82u1rhgcSm").role(UserRole.CANDIDATE).status(UserStatus.ACTIVE).build();
         userRepo.saveAll(Arrays.asList(cUser1, cUser2, cUser3, cUser4, cUser5));
 
         // 2. Create Companies (4 companies)

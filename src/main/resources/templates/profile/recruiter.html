@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: head('Recruiter Profile')}"></head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+
+<nav th:replace="~{fragments :: navbar}"></nav>
+<div th:replace="~{fragments :: flash}"></div>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
+    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+        <!-- Header -->
+        <div class="relative h-48 bg-gradient-to-r from-teal-600 to-indigo-700">
+            <div class="absolute -bottom-16 left-10">
+                <div class="w-32 h-32 rounded-2xl border-4 border-white shadow-xl bg-white flex items-center justify-center overflow-hidden">
+                    <img th:if="${profile.company != null and profile.company.logo != null}" th:src="${profile.company.logo}" alt="logo" class="max-w-full max-h-full object-contain">
+                    <svg th:unless="${profile.company != null and profile.company.logo != null}" class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form id="recruiterForm"
+              th:action="@{/profile/recruiter/update}"
+              method="POST" enctype="multipart/form-data"
+              class="p-8 pt-24 space-y-8">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <!-- Original values to check deletion via JS -->
+            <input type="hidden" id="orig_companyName" th:value="${profile.company?.companyName}">
+            <input type="hidden" id="orig_fullName" th:value="${profile.fullName}">
+            <input type="hidden" id="orig_phone" th:value="${profile.phone}">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Select Company -->
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Select Linked Company *</label>
+                    <select name="companyId" id="companyId" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 bg-white">
+                        <option th:each="comp : ${companies}" th:value="${comp.companyId}" th:text="${comp.companyName}" th:selected="${profile.company != null and profile.company.companyId == comp.companyId}"></option>
+                    </select>
+                </div>
+
+                <!-- Company Name -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Or update your Company Name</label>
+                    <input type="text" name="companyName" id="companyName"
+                           th:value="${profile.company?.companyName}"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                </div>
+                <!-- Company Website -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Company Website</label>
+                    <input type="url" name="website" id="website"
+                           th:value="${profile.company?.website}"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                           placeholder="https://...">
+                </div>
+                <!-- Company Address -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Company Address</label>
+                    <input type="text" name="address" id="address"
+                           th:value="${profile.company?.address}"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                           placeholder="e.g. FPT Building, Cau Giay, Hanoi">
+                </div>
+                <!-- Recruiter Name -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Recruiter Name *</label>
+                    <input type="text" name="fullName" id="fullName"
+                           th:value="${profile.fullName}" required
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500">
+                </div>
+                <!-- Recruiter Phone -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Phone Number *</label>
+                    <input type="text" name="phone" id="phone"
+                           th:value="${profile.phone}" required
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500">
+                </div>
+                <!-- Position -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Job Position / Title</label>
+                    <input type="text" name="position" id="position"
+                           th:value="${profile.position}"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500"
+                           placeholder="e.g. HR Manager / Tech Lead">
+                </div>
+                <!-- Company Description -->
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Company Description</label>
+                    <textarea name="companyDescription" id="companyDescription" rows="4"
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500" th:text="${profile.company?.description}"></textarea>
+                </div>
+                <!-- Company Logo -->
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">New Company Logo (JPG, PNG)</label>
+                    <input type="file" name="logoFile" accept="image/*"
+                           class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                    <p class="text-xs text-gray-400 mt-1">Leave blank if you do not want to change current logo</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 pt-6 border-t border-gray-100">
+                <a th:href="@{/}" class="px-6 py-3 text-gray-600 font-bold hover:text-gray-900 mt-1">Cancel</a>
+                <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-10 rounded-xl transition shadow-lg">Save Changes</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Password Change Section -->
+    <div id="change-password" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mt-8">
+        <div class="p-8">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Change Password</h3>
+                    <p class="text-sm text-gray-500">Update password to secure your account</p>
+                </div>
+            </div>
+
+            <form id="changePwdForm" th:action="@{/profile/change-password}" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Current Password *</label>
+                    <input type="password" name="currentPassword" id="cp_current" required
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none text-sm"
+                           placeholder="Enter current password">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">New Password *</label>
+                    <input type="password" name="newPassword" id="cp_new" required minlength="6"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none text-sm"
+                           placeholder="Minimum 6 characters">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Confirm New Password *</label>
+                    <input type="password" name="confirmPassword" id="cp_confirm" required minlength="6"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none text-sm"
+                           placeholder="Confirm new password">
+                    <p id="cp_matchMsg" class="text-xs mt-1 hidden"></p>
+                </div>
+
+                <div class="md:col-span-3 flex justify-end pt-2 border-t border-gray-100">
+                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-xl transition shadow-md">
+                        Change Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+(function () {
+    var fields = [
+        { id: 'fullName',  origId: 'orig_fullName',  label: 'Full Name' },
+        { id: 'phone',     origId: 'orig_phone',     label: 'Phone Number' }
+    ];
+
+    document.getElementById('recruiterForm').addEventListener('submit', function (e) {
+        for (var i = 0; i < fields.length; i++) {
+            var f = fields[i];
+            var origEl = document.getElementById(f.origId);
+            var newEl  = document.getElementById(f.id);
+            if (!origEl || !newEl) continue;
+
+            var origVal = origEl.value.trim();
+            var newVal  = newEl.value.trim();
+
+            if (origVal && !newVal) {
+                e.preventDefault();
+                alert(f.label + ' is already filled, deleting is not allowed!');
+                newEl.focus();
+                return;
+            }
+        }
+    });
+
+    var np = document.getElementById('cp_new');
+    var cp = document.getElementById('cp_confirm');
+    var msg = document.getElementById('cp_matchMsg');
+
+    function check() {
+        if (!cp.value) { msg.className = 'text-xs mt-1 hidden'; return; }
+        if (np.value === cp.value) {
+            msg.textContent = '✓ Passwords match';
+            msg.className = 'text-xs mt-1 text-green-600';
+        } else {
+            msg.textContent = '✗ Passwords do not match';
+            msg.className = 'text-xs mt-1 text-red-600';
+        }
+    }
+    if (np && cp) { np.addEventListener('input', check); cp.addEventListener('input', check); }
+})();
+</script>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+
+</body>
+</html>
