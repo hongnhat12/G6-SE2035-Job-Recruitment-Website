@@ -44,6 +44,7 @@ public class JobController {
             Model model) {
 
         Page<Job> jobPage = jobRepo.searchApprovedJobs(
+                JobStatus.APPROVED,
                 (keyword == null || keyword.trim().isEmpty()) ? null : keyword.trim(),
                 (location == null || location.trim().isEmpty()) ? null : location.trim(),
                 (employmentType == null || employmentType.trim().isEmpty()) ? null : employmentType.trim(),
@@ -56,9 +57,9 @@ public class JobController {
         model.addAttribute("totalPages", jobPage.getTotalPages());
         model.addAttribute("totalElements", jobPage.getTotalElements());
 
-        model.addAttribute("locations", jobRepo.findDistinctLocations());
-        model.addAttribute("employmentTypes", jobRepo.findDistinctEmploymentTypes());
-        model.addAttribute("industries", jobRepo.findDistinctIndustries());
+        model.addAttribute("locations", jobRepo.findDistinctLocations(JobStatus.APPROVED));
+        model.addAttribute("employmentTypes", jobRepo.findDistinctEmploymentTypes(JobStatus.APPROVED));
+        model.addAttribute("industries", jobRepo.findDistinctIndustries(JobStatus.APPROVED));
 
         model.addAttribute("keyword", keyword);
         model.addAttribute("location", location);
@@ -99,7 +100,7 @@ public class JobController {
 
         model.addAttribute("job", job);
 
-        List<Job> similarJobs = jobRepo.searchApprovedJobs(null, null, null, 
+        List<Job> similarJobs = jobRepo.searchApprovedJobs(JobStatus.APPROVED, null, null, null, 
                 job.getIndustry() != null ? job.getIndustry().getIndustryName() : null, 
                 PageRequest.of(0, 4))
                 .getContent().stream()

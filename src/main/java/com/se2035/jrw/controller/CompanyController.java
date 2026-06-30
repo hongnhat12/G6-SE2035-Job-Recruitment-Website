@@ -81,7 +81,7 @@ public class CompanyController {
             }
         }
 
-        if (company.getPhone() != null && company.getPhone().length() > 20) {
+        if (company.getPhone() != null && company.getPhone().length() > 10) {
             model.addAttribute("phoneError", "Phone number cannot exceed 20 characters");
             hasError = true;
         }
