@@ -7,6 +7,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -36,32 +37,41 @@ public class SecurityConfig {
             .authenticationProvider(authenticationProvider())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/", "/jobs", "/jobs/**", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/login", "/register", "/verify-email", "/resend-verification", "/forgot-password", "/reset-password").permitAll()
                 .requestMatchers("/my/**").hasRole("CANDIDATE")
-                    .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                    .successHandler((request, response, authentication) -> {
-
-                        if (authentication.getAuthorities().stream()
-                                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-
-                            response.sendRedirect("/admin/dashboard");
-
-                        } else if (authentication.getAuthorities().stream()
-                                .anyMatch(a -> a.getAuthority().equals("ROLE_RECRUITER"))) {
-
-                            response.sendRedirect("/recruiter/dashboard");
-
-                        } else {
-
-                            response.sendRedirect("/candidate/dashboard");
-                        }
-                    })
+                .successHandler((request, response, authentication) -> {
+                    if (authentication.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                        response.sendRedirect("/admin/dashboard");
+                    } else if (authentication.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equals("ROLE_RECRUITER"))) {
+                        response.sendRedirect("/jobs/manage");
+                    } else {
+                        response.sendRedirect("/");
+                    }
+                })
+                .failureHandler((request, response, exception) -> {
+                    if (exception instanceof DisabledException) {
+                        response.sendRedirect("/login?disabled=true");
+                        return;
+                    }
+                    response.sendRedirect("/login?error=true");
+                })
                 .permitAll()
             )
+            .rememberMe(remember -> remember
+                .key("jrw-remember-me-key")
+                .rememberMeParameter("remember-me")
+                .tokenValiditySeconds(14 * 24 * 60 * 60)
+                .userDetailsService(userDetailsService)
+            )
             .logout(logout -> logout
+                .deleteCookies("JSESSIONID", "remember-me")
                 .logoutSuccessUrl("/")
                 .permitAll()
             );

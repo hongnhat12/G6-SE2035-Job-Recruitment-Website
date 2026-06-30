@@ -2,6 +2,7 @@ package com.se2035.jrw.config;
 
 import com.se2035.jrw.entity.User;
 import com.se2035.jrw.repository.UserRepo;
+import com.se2035.jrw.enums.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,6 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .username(user.getEmail())
                 .password(user.getPasswordHash())
                 .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())))
+                .disabled(user.getStatus() != UserStatus.ACTIVE)
                 .build();
     }
 }
