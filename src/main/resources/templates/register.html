@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments :: head('Create Account')}"></head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+
+<nav th:replace="~{fragments :: navbar}"></nav>
+
+<main class="auth-page flex-grow">
+    <section class="auth-shell">
+        <aside class="auth-hero">
+            <div class="auth-hero-badge">
+                <i class="fa-solid fa-briefcase"></i>
+                DreamJob Account
+            </div>
+            <h1>Create your account and start faster.</h1>
+            <p>
+                Join DreamJob as a candidate to apply for jobs, or as a recruiter to post jobs and manage applicants.
+            </p>
+
+            <div class="auth-feature-list">
+                <div class="auth-feature">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <div>
+                        <strong>For candidates</strong>
+                        <p class="!mt-1 !text-sm">Search jobs, save favorite jobs, submit CV and track applications.</p>
+                    </div>
+                </div>
+                <div class="auth-feature">
+                    <i class="fa-solid fa-building"></i>
+                    <div>
+                        <strong>For recruiters</strong>
+                        <p class="!mt-1 !text-sm">Create job posts, receive applications and update candidate status.</p>
+                    </div>
+                </div>
+                <div class="auth-feature">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <div>
+                        <strong>Secure login</strong>
+                        <p class="!mt-1 !text-sm">Passwords are encrypted before being saved to the database.</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <section class="auth-card">
+            <div class="auth-card-header">
+                <div class="auth-icon">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <h2>Create Account</h2>
+                <p class="auth-subtitle">Fill in your information to create a new DreamJob account.</p>
+            </div>
+
+            <div th:if="${error}" class="auth-alert auth-alert-error mb-4">
+                <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+                <span th:text="${error}">Error message</span>
+            </div>
+
+            <form th:action="@{/register}" method="post" class="auth-form" id="registerForm">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                <div class="auth-grid-2">
+                    <div class="auth-field">
+                        <label for="fullName">Full Name</label>
+                        <div class="auth-input-wrap">
+                            <i class="fa-regular fa-user"></i>
+                            <input id="fullName" class="auth-input has-icon" type="text" name="fullName"
+                                   th:value="${fullName}" required placeholder="Nguyen Van A">
+                        </div>
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="phone">Phone Number</label>
+                        <div class="auth-input-wrap">
+                            <i class="fa-solid fa-phone"></i>
+                            <input id="phone" class="auth-input has-icon" type="tel" name="phone"
+                                   th:value="${phone}" required pattern="\d{10}" maxlength="10"
+                                   placeholder="0901234567"
+                                   title="Phone number must be exactly 10 digits"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label for="email">Email Address</label>
+                    <div class="auth-input-wrap">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input id="email" class="auth-input has-icon" type="email" name="email"
+                               th:value="${email}" required placeholder="example@email.com">
+                    </div>
+                </div>
+
+                <div class="auth-grid-2">
+                    <div class="auth-field">
+                        <label for="password">Password</label>
+                        <div class="auth-input-wrap">
+                            <i class="fa-solid fa-lock"></i>
+                            <input id="password" class="auth-input has-icon" type="password" name="password"
+                                   required minlength="6" placeholder="Minimum 6 characters">
+                        </div>
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="auth-input-wrap">
+                            <i class="fa-solid fa-key"></i>
+                            <input id="confirmPassword" class="auth-input has-icon" type="password" name="confirmPassword"
+                                   required minlength="6" placeholder="Re-enter password">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="auth-label">Account Type</span>
+                    <div class="role-cards">
+                        <label class="role-card" for="role-candidate">
+                            <input type="radio" id="role-candidate" name="role" value="CANDIDATE"
+                                   th:checked="${selectedRole == null or selectedRole == 'CANDIDATE'}">
+                            <div class="role-card-body">
+                                <i class="fa-solid fa-user-tie"></i>
+                                <strong>Candidate</strong>
+                                <span>I want to find a job</span>
+                            </div>
+                        </label>
+
+                        <label class="role-card" for="role-recruiter">
+                            <input type="radio" id="role-recruiter" name="role" value="RECRUITER"
+                                   th:checked="${selectedRole == 'RECRUITER'}">
+                            <div class="role-card-body">
+                                <i class="fa-solid fa-building-user"></i>
+                                <strong>Recruiter</strong>
+                                <span>I want to post jobs</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="company-section" class="auth-field hidden-by-role">
+                    <label for="companyName">Company Name</label>
+                    <div class="auth-input-wrap">
+                        <i class="fa-regular fa-building"></i>
+                        <input id="companyName" class="auth-input has-icon" type="text" name="companyName"
+                               th:value="${companyName}" placeholder="Your company name">
+                    </div>
+                    <p class="auth-note mt-2">Required for recruiter accounts. Existing company names will be reused.</p>
+                </div>
+
+                <p class="auth-note">
+                    By creating an account, you agree to DreamJob Terms and Privacy Policy.
+                </p>
+
+                <button type="submit" class="auth-btn">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    Create Account
+                </button>
+            </form>
+
+            <p class="auth-footer-text">
+                Already have an account?
+                <a th:href="@{/login}" class="auth-link">Log in here</a>
+            </p>
+        </section>
+    </section>
+</main>
+
+<footer th:replace="~{fragments :: footer}"></footer>
+
+<script>
+    function toggleCompanySection() {
+        const recruiterRadio = document.getElementById('role-recruiter');
+        const companySection = document.getElementById('company-section');
+        const companyInput = document.getElementById('companyName');
+        if (!recruiterRadio || !companySection || !companyInput) return;
+
+        const isRecruiter = recruiterRadio.checked;
+        companySection.classList.toggle('hidden-by-role', !isRecruiter);
+        companyInput.required = isRecruiter;
+    }
+
+    document.querySelectorAll('input[name="role"]').forEach(function (radio) {
+        radio.addEventListener('change', toggleCompanySection);
+    });
+
+    toggleCompanySection();
+</script>
+
+</body>
+</html>
