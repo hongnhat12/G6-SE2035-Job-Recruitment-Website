@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SavedJobRepo extends JpaRepository<SavedJob, SavedJobId> {
 
-    @EntityGraph(attributePaths = {"job", "job.company"})
     Page<SavedJob> findByCandidateOrderBySavedAtDesc(Candidate candidate, Pageable pageable);
 
     boolean existsByIdCandidateIdAndIdJobId(Integer candidateId, Integer jobId);

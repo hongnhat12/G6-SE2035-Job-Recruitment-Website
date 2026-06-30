@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: head('Home')}"></head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
 
@@ -87,7 +86,7 @@
                             </div>
                         </div>
                         <div class="flex justify-between items-center text-sm pt-4 border-t border-gray-50 mt-auto">
-                            <span class="text-green-600 font-bold text-lg" th:text="${job.salaryMax != null ? (job.salaryMax.longValue() / 1000000) + 'M' : 'Negotiable'}">Salary</span>
+                            <span class="text-green-600 font-bold text-lg" th:text="${job.salaryMax != null ? (job.salaryMax.longValue() / 1000) + 'k' : 'Negotiable'}">Salary</span>
                             <span class="bg-teal-50 text-teal-700 text-xs px-3 py-1.5 rounded-lg font-semibold group-hover:bg-teal-600 group-hover:text-white transition-colors">Apply</span>
                         </div>
                     </a>

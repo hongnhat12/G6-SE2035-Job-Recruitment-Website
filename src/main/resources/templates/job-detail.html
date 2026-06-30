@@ -142,7 +142,7 @@
                     <p class="text-sm text-teal-600 mb-2" th:text="${sj.company?.companyName}">Company</p>
                     <div class="flex justify-between text-xs text-gray-500">
                         <span th:text="${sj.location}">Location</span>
-                        <span class="text-green-600 font-bold" th:text="${sj.salaryMax != null ? (sj.salaryMax.longValue() / 1000000) + 'M' : 'Negotiable'}">Salary</span>
+                        <span class="text-green-600 font-bold" th:text="${sj.salaryMax != null ? (sj.salaryMax.longValue() / 1000) + 'k' : 'Negotiable'}">Salary</span>
                     </div>
                 </div>
             </div>

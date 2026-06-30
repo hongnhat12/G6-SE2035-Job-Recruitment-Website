@@ -16,10 +16,8 @@ import java.util.Optional;
 public interface JobRepo extends JpaRepository<Job, Integer>, JpaSpecificationExecutor<Job> {
     Page<Job> findByStatus(JobStatus status, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"company"})
     List<Job> findTop8ByStatusOrderByCreatedAtDesc(JobStatus status);
 
-    @EntityGraph(attributePaths = {"company"})
     List<Job> findTop8ByStatusOrderBySalaryMaxDesc(JobStatus status);
 
     @Query(value = """
@@ -58,10 +56,8 @@ public interface JobRepo extends JpaRepository<Job, Integer>, JpaSpecificationEx
     @Query("SELECT DISTINCT j.industry.industryName FROM Job j WHERE j.status = com.se2035.jrw.enums.JobStatus.APPROVED AND j.industry IS NOT NULL ORDER BY j.industry.industryName")
     List<String> findDistinctIndustries();
 
-    @EntityGraph(attributePaths = {"company", "recruiter"})
     Optional<Job> findByJobIdAndStatus(Integer jobId, JobStatus status);
 
-    @EntityGraph(attributePaths = {"company", "recruiter", "industry"})
     @Query("SELECT j FROM Job j WHERE j.jobId = :jobId")
     Optional<Job> findJobDetailWithAssociations(@Param("jobId") Integer jobId);
 
@@ -76,7 +72,6 @@ public interface JobRepo extends JpaRepository<Job, Integer>, JpaSpecificationEx
     @Query("SELECT COALESCE(MIN(j.salaryMin), 0.0) FROM Job j WHERE j.status = :status")
     Double findLowestSalaryMinByStatus(@Param("status") JobStatus status);
 
-    @EntityGraph(attributePaths = {"company"})
     List<Job> findTop5ByStatusOrderByCreatedAtDesc(JobStatus status);
 
     @Query("SELECT j.industry.industryName, COUNT(j) FROM Job j WHERE j.industry IS NOT NULL AND j.status = :status GROUP BY j.industry.industryName")
@@ -85,7 +80,7 @@ public interface JobRepo extends JpaRepository<Job, Integer>, JpaSpecificationEx
     @Query("SELECT j.employmentType, COUNT(j) FROM Job j WHERE j.employmentType IS NOT NULL AND j.status = :status GROUP BY j.employmentType")
     List<Object[]> countJobsByEmploymentTypeAndStatus(@Param("status") JobStatus status);
 
-    List<Job> findByRecruiterId(Integer recruiterId);
+    List<Job> findByRecruiterRecruiterId(Integer recruiterId);
 
     List<Job> findByRecruiterRecruiterIdAndStatusNot(
             Integer recruiterId,

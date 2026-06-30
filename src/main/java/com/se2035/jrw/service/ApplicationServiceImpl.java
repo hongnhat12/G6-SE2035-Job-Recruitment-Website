@@ -34,7 +34,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Job job = jobRepo.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
 
-        return applicationRepo.findByJobId(jobId);
+        return applicationRepo.findByJobJobId(jobId);
     }
 
     @Override
