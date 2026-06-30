@@ -17,10 +17,8 @@ public interface JobRepo extends JpaRepository<Job, Integer> {
 
     List<Job> findTop8ByStatusOrderByCreatedAtDesc(JobStatus status);
 
-    @EntityGraph(attributePaths = {"company"})
     List<Job> findTop8ByStatusOrderBySalaryMaxDesc(JobStatus status);
 
-    @EntityGraph(attributePaths = {"company"})
     @Query("""
             SELECT j FROM Job j
             WHERE j.status = :status
