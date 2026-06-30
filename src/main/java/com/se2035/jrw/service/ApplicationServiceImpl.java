@@ -39,10 +39,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public Application shortlist(Integer applicationId) {
+    public Application shortlist(Integer applicationId, Integer recruiterId) {
         Application application = applicationRepo.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Application not found"));
 
+        if (!application.getJob().getRecruiter().getRecruiterId().equals(recruiterId)) {
+            throw new BadRequestException("You do not have permission to review this application");
+        }
         if(application.getStatus() != ApplicationStatus.PENDING) {
             throw new BadRequestException("Only pending applications can be shortlisted");
         }
@@ -99,12 +102,15 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public Application reject(Integer applicationId) {
+    public Application reject(Integer applicationId, Integer recruiterId) {
         Application application = applicationRepo.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Application not found"));
 
-        if(application.getStatus() != ApplicationStatus.PENDING) {
-            throw new BadRequestException("Only pending applications can be rejected");
+        if (!application.getJob().getRecruiter().getRecruiterId().equals(recruiterId)) {
+            throw new BadRequestException("You do not have permission to review this application");
+        }
+        if(application.getStatus() != ApplicationStatus.PENDING && application.getStatus() != ApplicationStatus.SHORTLISTED) {
+            throw new BadRequestException("Only pending or shorlisted applications can be rejected");
         }
 
         application.setStatus(ApplicationStatus.REJECTED);
@@ -132,10 +138,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public Application hire(Integer applicationId) {
+    public Application hire(Integer applicationId, Integer recruiterId) {
         Application application = applicationRepo.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Application not found"));
 
+        if (!application.getJob().getRecruiter().getRecruiterId().equals(recruiterId)) {
+            throw new BadRequestException("You do not have permission to review this application");
+        }
         if (application.getStatus() != ApplicationStatus.SHORTLISTED) {
             throw new BadRequestException("Only shortlist applications can be hire");
         }
@@ -155,24 +164,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Application findById(Integer id) {
-        return applicationRepo.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Application not found"));
-    }
-
-    @Override
-    public List<Application> findAll() {
-        return applicationRepo.findAll();
-    }
-
-    @Override
     public List<Application> findByRecruiterId(Integer recruiterId) {
         return applicationRepo.findByJob_Recruiter_RecruiterIdOrderByAppliedAtDesc(recruiterId);
-    }
-
-    @Override
-    @Transactional
-    public Application save(Application application) {
-        return applicationRepo.save(application);
     }
 }

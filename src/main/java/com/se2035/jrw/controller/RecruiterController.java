@@ -29,15 +29,14 @@ public class RecruiterController {
 
     @GetMapping("/jobs/manage")
     public String manageJobs(Authentication auth, Model model) {
-            Recruiter recruiter = getCurrentRecruiter(auth);
-            List<Job> myJobs = jobService.getMyJobs(recruiter);
-            model.addAttribute("jobs", myJobs);
-            return "recruiter/dashboard";
+        Recruiter recruiter = getCurrentRecruiter(auth);
+        List<Job> myJobs = jobService.getMyJobs(recruiter);
+        model.addAttribute("jobs", myJobs);
+        return "recruiter/dashboard";
     }
 
     @GetMapping("/jobs/create")
     public String showCreateForm(Authentication auth, Model model) {
-        try {
             Recruiter recruiter = getCurrentRecruiter(auth);
             JobRequest request = new JobRequest();
             request.setRecruiterId(recruiter.getRecruiterId());
@@ -45,9 +44,6 @@ public class RecruiterController {
             model.addAttribute("job", request);
             model.addAttribute("industries", industryService.getAllIndustries());
             return "recruiter/job-form";
-        } catch (Exception e) {
-            return "redirect:/login";
-        }
     }
 
     @PostMapping("/jobs/create")
@@ -140,24 +136,21 @@ public class RecruiterController {
     }
 
     @PostMapping("/applications/status")
-    public String updateApplicationStatus(
-            @RequestParam Integer applicationId,
-            @RequestParam String status,
-            Authentication auth,
-            RedirectAttributes redirectAttributes) {
-
-            Recruiter recruiter = getCurrentRecruiter(auth);
-            Application app = applicationService.findById(applicationId);
-
-            if (!app.getJob().getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
-                throw new IllegalStateException("You do not have permission to review this application");
+    public String updateApplicationStatus(@RequestParam Integer applicationId,
+                                          @RequestParam String status,
+                                          Authentication auth,
+                                          RedirectAttributes redirectAttributes) {
+        Recruiter recruiter = getCurrentRecruiter(auth);
+        switch (status.toUpperCase()) {
+            case "SHORTLISTED" -> applicationService.shortlist(applicationId, recruiter.getRecruiterId());
+            case "REJECTED" -> applicationService.reject(applicationId, recruiter.getRecruiterId());
+            case "HIRED" -> applicationService.hire(applicationId, recruiter.getRecruiterId());
+            default -> {
+                redirectAttributes.addFlashAttribute("error", "Invalid status value.");
+                return "redirect:/applications/manage";
             }
-
-            ApplicationStatus appStatus = ApplicationStatus.valueOf(status.toUpperCase());
-            app.setStatus(appStatus);
-            applicationService.save(app);
-
-            redirectAttributes.addFlashAttribute("success", "Application status updated successfully.");
+        }
+        redirectAttributes.addFlashAttribute("success", "Application status updated successfully.");
         return "redirect:/applications/manage";
     }
 }

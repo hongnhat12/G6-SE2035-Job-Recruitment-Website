@@ -18,11 +18,8 @@ public interface ApplicationService {
     boolean hasApplied(Integer candidateId, Integer jobId);
 
     List<Application> findByJobId(Integer jobId);
-    Application shortlist(Integer applicationId);
-    Application reject(Integer applicationId);
-    Application hire(Integer applicationId);
-    Application findById(Integer id);
-    List<Application> findAll();
+    Application shortlist(Integer applicationId, Integer recruiterId);
+    Application reject(Integer applicationId, Integer recruiterId);
+    Application hire(Integer applicationId, Integer recruiterId);
     List<Application> findByRecruiterId(Integer recruiterId);
-    Application save(Application application);
 }
