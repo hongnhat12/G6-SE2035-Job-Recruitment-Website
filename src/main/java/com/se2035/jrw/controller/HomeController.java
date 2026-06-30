@@ -17,7 +17,7 @@ public class HomeController {
     public String home(Model model) {
         model.addAttribute("latestJobs", jobRepo.findTop8ByStatusOrderByCreatedAtDesc(JobStatus.APPROVED));
         model.addAttribute("hottestJobs", jobRepo.findTop8ByStatusOrderBySalaryMaxDesc(JobStatus.APPROVED));
-        model.addAttribute("locations", jobRepo.findDistinctLocations());
+        model.addAttribute("locations", jobRepo.findDistinctLocations(JobStatus.APPROVED));
         return "home";
     }
 }
