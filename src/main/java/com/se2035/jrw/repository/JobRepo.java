@@ -85,7 +85,7 @@ public interface JobRepo extends JpaRepository<Job, Integer>, JpaSpecificationEx
     @Query("SELECT j.employmentType, COUNT(j) FROM Job j WHERE j.employmentType IS NOT NULL AND j.status = :status GROUP BY j.employmentType")
     List<Object[]> countJobsByEmploymentTypeAndStatus(@Param("status") JobStatus status);
 
-    List<Job> findByRecruiterId(Integer recruiterId);
+    List<Job> findByRecruiterRecruiterId(Integer recruiterId);
 
     List<Job> findByRecruiterRecruiterIdAndStatusNot(
             Integer recruiterId,

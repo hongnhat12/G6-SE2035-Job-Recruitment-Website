@@ -29,14 +29,10 @@ public class RecruiterController {
 
     @GetMapping("/jobs/manage")
     public String manageJobs(Authentication auth, Model model) {
-        try {
             Recruiter recruiter = getCurrentRecruiter(auth);
             List<Job> myJobs = jobService.getMyJobs(recruiter);
             model.addAttribute("jobs", myJobs);
             return "recruiter/dashboard";
-        } catch (Exception e) {
-            return "redirect:/login";
-        }
     }
 
     @GetMapping("/jobs/create")

@@ -183,7 +183,7 @@ public class JobServiceImpl implements JobService{
         Recruiter recruiter = recruiterRepo.findById(recruiterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Recruiter not found"));
 
-        List<Job> jobs = jobRepo.findByRecruiterId(recruiterId);
+        List<Job> jobs = jobRepo.findByRecruiterRecruiterId(recruiterId);
 
         return jobs;
     }
