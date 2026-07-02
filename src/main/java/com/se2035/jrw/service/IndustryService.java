@@ -1,5 +1,6 @@
 package com.se2035.jrw.service;
 
+import com.se2035.jrw.dto.IndustryRequest;
 import com.se2035.jrw.entity.Industry;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +15,7 @@ public interface IndustryService {
 
     Industry getIndustryById(Integer id);
 
-    void saveIndustry(Industry industry);
+    void saveIndustry(IndustryRequest industryRequest);
 
     void deleteIndustryById(Integer id);
 }

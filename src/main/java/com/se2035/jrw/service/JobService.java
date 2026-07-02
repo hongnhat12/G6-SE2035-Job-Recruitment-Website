@@ -11,16 +11,24 @@ import java.util.List;
 
 public interface JobService {
     Job createJob(JobRequest req);
+
     Job editJob(Integer jobId, JobRequest req);
+
     void deleteJob(Integer jobId);
+
     List<Job> findAll();
+
     Job closeJob(Integer jobId);
+
     List<Job> findByRecruiterId(Integer recruiterId);
+
     Page<Job> findPendingJobs(Pageable pageable);
 
     Job approveJob(Integer jobId, User adminUser);
 
     Job rejectJob(Integer jobId, User adminUser);
+
     Job findById(Integer id);
+
     List<Job> getMyJobs(Recruiter recruiter);
 }
