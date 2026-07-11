@@ -1,8 +1,9 @@
 package com.se2035.jrw.service;
 
+import com.se2035.jrw.dto.IndustryRequest;
+import com.se2035.jrw.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import com.se2035.jrw.entity.Industry;
-import com.se2035.jrw.exception.BadRequestException;
 import com.se2035.jrw.exception.ResourceNotFoundException;
 import com.se2035.jrw.repository.IndustryRepo;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,13 +43,23 @@ public class IndustryServiceImpl implements IndustryService {
     }
 
     @Override
-    public void saveIndustry(Industry industry) {
-        industryRepo.findByIndustryName(industry.getIndustryName())
-                .ifPresent(existing -> {
-                    if (industry.getIndustryId() == null || !existing.getIndustryId().equals(industry.getIndustryId())) {
-                        throw new BadRequestException("Industry name '" + industry.getIndustryName() + "' already exists!");
-                    }
-                });
+    public void saveIndustry(IndustryRequest industryRequest) {
+        Optional<Industry> foundIndustry = industryRepo.findByIndustryName(industryRequest.getIndustryName());
+        if (foundIndustry.isPresent()) {
+            if (industryRequest.getIndustryId() == null || !foundIndustry.get().getIndustryId().equals(industryRequest.getIndustryId())) {
+                throw new BadRequestException("Industry name " + industryRequest.getIndustryName() + " existing");
+            }
+        }
+        Industry industry;
+        if (industryRequest.getIndustryId() == null) {
+            industry = new Industry();
+        } else {
+            industry = industryRepo.findById(industryRequest.getIndustryId()).orElseThrow(() ->
+                    new ResourceNotFoundException("Industry not found")
+            );
+        }
+        industry.setIndustryName(industryRequest.getIndustryName());
+        industry.setDescription(industryRequest.getDescription());
 
         industryRepo.save(industry);
     }

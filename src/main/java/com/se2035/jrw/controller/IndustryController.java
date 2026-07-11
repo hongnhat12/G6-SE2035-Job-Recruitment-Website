@@ -1,5 +1,6 @@
 package com.se2035.jrw.controller;
 
+import com.se2035.jrw.dto.IndustryRequest;
 import com.se2035.jrw.entity.Industry;
 import com.se2035.jrw.service.IndustryService;
 
@@ -44,7 +45,7 @@ public class IndustryController {
 
     @GetMapping("/create")
     public String showCreateForm(Model model) {
-        model.addAttribute("industry", new Industry());
+        model.addAttribute("industry", new IndustryRequest());
         return "admin/industry/form";
     }
 
@@ -57,16 +58,16 @@ public class IndustryController {
 
     @PostMapping("/save")
     public String saveIndustry(
-            @ModelAttribute("industry") Industry industry,
+            @ModelAttribute("industry") IndustryRequest industryRequest,
             RedirectAttributes redirectAttributes,
             Model model) {
 
         boolean hasError = false;
 
-        if (industry.getIndustryName() == null || industry.getIndustryName().trim().isEmpty()) {
+        if (industryRequest.getIndustryName() == null || industryRequest.getIndustryName().trim().isEmpty()) {
             model.addAttribute("nameError", "Industry name cannot be blank");
             hasError = true;
-        } else if (industry.getIndustryName().length() > 100) {
+        } else if (industryRequest.getIndustryName().length() > 100) {
             model.addAttribute("nameError", "Industry name cannot exceed 100 characters");
             hasError = true;
         }
@@ -76,7 +77,7 @@ public class IndustryController {
         }
 
         try {
-            industryService.saveIndustry(industry);
+            industryService.saveIndustry(industryRequest);
             redirectAttributes.addFlashAttribute("success", "Industry saved successfully!");
         } catch (RuntimeException e) {
             model.addAttribute("errorMessage", e.getMessage());

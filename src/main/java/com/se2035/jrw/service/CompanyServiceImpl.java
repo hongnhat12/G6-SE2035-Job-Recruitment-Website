@@ -1,5 +1,6 @@
 package com.se2035.jrw.service;
 
+import com.se2035.jrw.dto.CompanyRequest;
 import com.se2035.jrw.entity.Company;
 import com.se2035.jrw.exception.BadRequestException;
 import com.se2035.jrw.exception.ResourceNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,17 +43,32 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public void saveCompany(Company company) {
-        if (company.getCompanyName() != null) {
-            company.setCompanyName(company.getCompanyName().trim());
+    public void saveCompany(CompanyRequest companyRequest) {
+        String trimmedName = companyRequest.getCompanyName().trim();
+        companyRequest.setCompanyName(trimmedName);
+
+        Optional<Company> existing = companyRepo.findByCompanyNameIgnoreCase(companyRequest.getCompanyName());
+        if (existing.isPresent()) {
+            if (companyRequest.getCompanyId() == null || !existing.get().getCompanyId().equals(companyRequest.getCompanyId())) {
+                throw new BadRequestException("Company name '" + companyRequest.getCompanyName() + "' already exists!");
+            }
         }
 
-        companyRepo.findByCompanyNameIgnoreCase(company.getCompanyName())
-                .ifPresent(existing -> {
-                    if (company.getCompanyId() == null || !existing.getCompanyId().equals(company.getCompanyId())) {
-                        throw new BadRequestException("Company name '" + company.getCompanyName() + "' already exists!");
-                    }
-                });
+        Company company;
+        if (companyRequest.getCompanyId() == null) {
+            company = new Company();
+        } else {
+            company = companyRepo.findById(companyRequest.getCompanyId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Company not found with ID: " + companyRequest.getCompanyId()));
+        }
+        company.setCompanyName(companyRequest.getCompanyName());
+        company.setDescription(companyRequest.getDescription());
+        company.setWebsite(companyRequest.getWebsite());
+        company.setEmail(companyRequest.getEmail());
+        company.setPhone(companyRequest.getPhone());
+        company.setAddress(companyRequest.getAddress());
+        company.setLogo(companyRequest.getLogo());
+        company.setStatus(companyRequest.getStatus());
 
         companyRepo.save(company);
     }
