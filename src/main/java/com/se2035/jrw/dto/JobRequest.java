@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
-public class JobRequest {
+public class  JobRequest {
     private Integer companyId;
     private Integer recruiterId;
     private Integer industryId;

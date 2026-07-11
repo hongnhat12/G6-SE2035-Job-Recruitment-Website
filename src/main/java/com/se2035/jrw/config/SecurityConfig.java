@@ -50,7 +50,7 @@ public class SecurityConfig {
                         response.sendRedirect("/admin/dashboard");
                     } else if (authentication.getAuthorities().stream()
                             .anyMatch(a -> a.getAuthority().equals("ROLE_RECRUITER"))) {
-                        response.sendRedirect("/jobs/manage");
+                        response.sendRedirect("/recruiter/dashboard");
                     } else {
                         response.sendRedirect("/");
                     }
