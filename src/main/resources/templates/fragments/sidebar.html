@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<aside th:fragment="sidebar" class="col-span-1">
+    <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+        <div class="bg-teal-600 text-white py-4 px-6">
+            <h3 class="font-bold flex items-center text-sm">
+                <i class="fa-solid fa-gauge mr-2"></i> Recruiter Panel
+            </h3>
+        </div>
+        <div class="divide-y divide-gray-50">
+            <a th:href="@{/recruiter/dashboard}" class="block py-4 px-6 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center">
+                <i class="fa-solid fa-chart-pie mr-3 text-gray-400"></i> Dashboard
+            </a>
+            <a th:href="@{/recruiter/jobs}" class="block py-4 px-6 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center transition">
+                <i class="fa-solid fa-briefcase mr-3 text-gray-400"></i> My Jobs
+            </a>
+            <a th:href="@{/recruiter/applications}" class="block py-4 px-6 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center transition">
+                <i class="fa-solid fa-file-lines mr-3 text-gray-400"></i> Applicants
+            </a>
+        </div>
+    </div>
+</aside>
+</html>

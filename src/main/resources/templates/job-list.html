@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Search Jobs')}"></head>
+<head th:replace="~{fragments/head :: head('Search Jobs')}"></head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
 
-<nav th:replace="~{fragments :: navbar}"></nav>
-<div th:replace="~{fragments :: flash}"></div>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/flash :: flash}"></div>
 
 <main class="flex-grow">
     <div class="bg-gradient-to-br from-teal-600 to-teal-800 py-14">
@@ -123,7 +123,7 @@
     </div>
 </main>
 
-<footer th:replace="~{fragments :: footer}"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
 </body>
 </html>

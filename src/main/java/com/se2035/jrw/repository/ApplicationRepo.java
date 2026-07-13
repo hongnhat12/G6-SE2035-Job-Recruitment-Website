@@ -29,4 +29,6 @@ public interface ApplicationRepo extends JpaRepository<Application, Integer> {
     List<Object[]> countApplicationsByStatus();
 
     List<Application> findByJobJobId(Integer jobId);
+
+    Long countBy
 }

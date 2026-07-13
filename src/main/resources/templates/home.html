@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Home')}"></head>
+<head th:replace="~{fragments/head :: head('Home')}"></head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
 
-<nav th:replace="~{fragments :: navbar}"></nav>
-<div th:replace="~{fragments :: flash}"></div>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/flash :: flash}"></div>
 
 <main class="flex-grow">
     <!-- Hero Section -->
@@ -177,7 +177,7 @@
     </section>
 </main>
 
-<footer th:replace="~{fragments :: footer}"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
 </body>
 </html>

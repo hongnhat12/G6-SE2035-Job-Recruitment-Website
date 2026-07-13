@@ -40,7 +40,8 @@ public class SecurityConfig {
                 .requestMatchers("/login", "/register", "/verify-email", "/resend-verification", "/forgot-password", "/reset-password").permitAll()
                 .requestMatchers("/my/**").hasRole("CANDIDATE")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
+                    .requestMatchers("/recruiter/**").hasRole("RECRUITER")
+                    .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")

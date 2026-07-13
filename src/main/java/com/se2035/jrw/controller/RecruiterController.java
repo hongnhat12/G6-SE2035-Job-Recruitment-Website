@@ -2,8 +2,6 @@ package com.se2035.jrw.controller;
 
 import com.se2035.jrw.dto.JobRequest;
 import com.se2035.jrw.entity.*;
-import com.se2035.jrw.enums.ApplicationStatus;
-import com.se2035.jrw.enums.JobStatus;
 import com.se2035.jrw.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -16,6 +14,7 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/recruiter")
 public class RecruiterController {
 
     private final RecruiterService recruiterService;
@@ -27,12 +26,20 @@ public class RecruiterController {
         return recruiterService.getCurrentRecruiter(auth);
     }
 
-    @GetMapping("/jobs/manage")
+    @GetMapping("/dashboard")
+    public String dashboard(Authentication auth, Model model) {
+        Recruiter recruiter = getCurrentRecruiter(auth);
+        model.addAttribute("recruiter", recruiter);
+        model.addAllAttributes(recruiterService.getDashboardStats(recruiter));
+        return "recruiter/dashboard";
+    }
+
+    @GetMapping("/jobs")
     public String manageJobs(Authentication auth, Model model) {
         Recruiter recruiter = getCurrentRecruiter(auth);
         List<Job> myJobs = jobService.getMyJobs(recruiter);
         model.addAttribute("jobs", myJobs);
-        return "recruiter/dashboard";
+        return "recruiter/jobs";
     }
 
     @GetMapping("/jobs/create")
@@ -62,7 +69,7 @@ public class RecruiterController {
         redirectAttributes.addFlashAttribute(
                 "success",
                 "Job posted successfully. Waiting for admin approval.");
-        return "redirect:/jobs/manage";
+        return "redirect:/recruiter/jobs";
     }
 
     @GetMapping("/jobs/edit/{id}")
@@ -95,24 +102,24 @@ public class RecruiterController {
             jobService.editJob(id, request);
 
             redirectAttributes.addFlashAttribute("success", "Job updated successfully! It will be reviewed by admin again.");
-        return "redirect:/jobs/manage";
+        return "redirect:/recruiter/jobs";
     }
 
     @PostMapping("/jobs/close/{id}")
     public String closeJob(@PathVariable Integer id, Authentication auth, RedirectAttributes redirectAttributes) {
             jobService.closeJob(id);
             redirectAttributes.addFlashAttribute("success", "Job closed successfully.");
-        return "redirect:/jobs/manage";
+        return "redirect:/recruiter/jobs";
     }
 
     @PostMapping("/jobs/delete/{id}")
     public String deleteJob(@PathVariable Integer id, Authentication auth, RedirectAttributes redirectAttributes) {
             jobService.deleteJob(id);
             redirectAttributes.addFlashAttribute("success", "Job deleted successfully.");
-        return "redirect:/jobs/manage";
+        return "redirect:/recruiter/jobs";
     }
 
-    @GetMapping("/applications/manage")
+    @GetMapping("/applications")
     public String manageApplications(Authentication auth, Model model) {
             Recruiter recruiter = getCurrentRecruiter(auth);
             List<Application> applications = applicationService.findByRecruiterId(recruiter.getRecruiterId());
@@ -147,10 +154,10 @@ public class RecruiterController {
             case "HIRED" -> applicationService.hire(applicationId, recruiter.getRecruiterId());
             default -> {
                 redirectAttributes.addFlashAttribute("error", "Invalid status value.");
-                return "redirect:/applications/manage";
+                return "redirect:/recruiter/applications";
             }
         }
         redirectAttributes.addFlashAttribute("success", "Application status updated successfully.");
-        return "redirect:/applications/manage";
+        return "redirect:/recruiter/applications";
     }
 }
