@@ -32,8 +32,8 @@
             </div>
             
             <div class="hidden md:flex items-center space-x-8">
-                <a th:unless="${isAdminPage}" th:href="@{/}" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
-                <a th:unless="${isAdminPage}" th:href="@{/jobs}" class="text-gray-600 hover:text-teal-600 font-medium transition">Search Jobs</a>
+                <a sec:authorize="!hasRole('ADMIN')" th:href="@{/}" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
+                <a sec:authorize="!hasRole('ADMIN')" th:href="@{/jobs}" class="text-gray-600 hover:text-teal-600 font-medium transition">Search Jobs</a>
                 <div sec:authorize="hasRole('RECRUITER')" class="flex space-x-8">
                     <a th:href="@{/jobs/manage}" class="text-gray-600 hover:text-teal-600 font-medium transition">My Jobs</a>
                     <a th:href="@{/applications/manage}" class="text-gray-600 hover:text-teal-600 font-medium transition">Applications</a>
@@ -41,9 +41,6 @@
                 <div sec:authorize="hasRole('CANDIDATE')" class="flex space-x-8">
                     <a th:href="@{/my/saved-jobs}" class="text-gray-600 hover:text-teal-600 font-medium transition">Saved Jobs</a>
                     <a th:href="@{/my/applications}" class="text-gray-600 hover:text-teal-600 font-medium transition">My Applications</a>
-                </div>
-                <div th:unless="${isAdminPage}" sec:authorize="hasRole('ADMIN')" class="flex space-x-8">
-                    <a th:href="@{/admin/companies}" class="text-red-500 font-semibold hover:text-red-700 transition">Administration</a>
                 </div>
             </div>
 
