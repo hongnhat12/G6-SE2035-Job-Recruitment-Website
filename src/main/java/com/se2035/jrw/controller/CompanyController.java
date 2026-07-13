@@ -1,8 +1,11 @@
 package com.se2035.jrw.controller;
 
+import com.se2035.jrw.dto.CompanyRequest;
 import com.se2035.jrw.entity.Company;
 import com.se2035.jrw.service.CompanyService;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
@@ -56,52 +59,32 @@ public class CompanyController {
 
     @PostMapping("/save")
     public String saveCompany(
-            @ModelAttribute("company") Company company,
+            @Valid @ModelAttribute("company") CompanyRequest companyRequest,
+            BindingResult bindingResult,
             RedirectAttributes redirectAttributes,
             Model model) {
 
-        boolean hasError = false;
-
-        if (company.getCompanyName() == null || company.getCompanyName().trim().isEmpty()) {
-            model.addAttribute("nameError", "Company name cannot be blank");
-            hasError = true;
-        } else if (company.getCompanyName().length() > 200) {
-            model.addAttribute("nameError", "Company name cannot exceed 200 characters");
-            hasError = true;
-        }
-
-        if (company.getEmail() != null && !company.getEmail().trim().isEmpty()) {
-            String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
-            if (!company.getEmail().matches(emailRegex)) {
-                model.addAttribute("emailError", "Invalid email format");
-                hasError = true;
-            } else if (company.getEmail().length() > 100) {
-                model.addAttribute("emailError", "Email cannot exceed 100 characters");
-                hasError = true;
+        if (bindingResult.hasErrors()) {
+            if (bindingResult.hasFieldErrors("companyName")) {
+                model.addAttribute("nameError", bindingResult.getFieldError("companyName").getDefaultMessage());
             }
-        }
-
-        if (company.getPhone() != null && company.getPhone().length() > 20) {
-            model.addAttribute("phoneError", "Phone number cannot exceed 20 characters");
-            hasError = true;
-        }
-
-        if (company.getWebsite() != null && company.getWebsite().length() > 255) {
-            model.addAttribute("websiteError", "Website URL cannot exceed 255 characters");
-            hasError = true;
-        }
-
-        if (company.getAddress() != null && company.getAddress().length() > 255) {
-            model.addAttribute("addressError", "Address cannot exceed 255 characters");
-            hasError = true;
-        }
-
-        if (hasError) {
+            if (bindingResult.hasFieldErrors("email")) {
+                model.addAttribute("emailError", bindingResult.getFieldError("email").getDefaultMessage());
+            }
+            if (bindingResult.hasFieldErrors("phone")) {
+                model.addAttribute("phoneError", bindingResult.getFieldError("phone").getDefaultMessage());
+            }
+            if (bindingResult.hasFieldErrors("website")) {
+                model.addAttribute("websiteError", bindingResult.getFieldError("website").getDefaultMessage());
+            }
+            if (bindingResult.hasFieldErrors("address")) {
+                model.addAttribute("addressError", bindingResult.getFieldError("address").getDefaultMessage());
+            }
             return "admin/company/form";
         }
 
         try {
-            companyService.saveCompany(company);
+            companyService.saveCompany(companyRequest);
             redirectAttributes.addFlashAttribute("success", "Company saved successfully!");
         } catch (RuntimeException e) {
             model.addAttribute("errorMessage", e.getMessage());

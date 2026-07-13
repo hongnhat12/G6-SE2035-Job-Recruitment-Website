@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <th:block th:replace="~{fragments :: head('Admin Dashboard')}"></th:block>
+    <th:block th:replace="~{fragments/head :: head('Admin Dashboard')}"></th:block>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
 
-<nav th:replace="~{fragments :: navbar}"></nav>
-<div th:replace="~{fragments :: flash}"></div>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/flash :: flash}"></div>
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -145,7 +144,7 @@
     </div>
 </main>
 
-<footer th:replace="~{fragments :: footer}"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
 <script th:inline="javascript">
     /*<![CDATA[*/

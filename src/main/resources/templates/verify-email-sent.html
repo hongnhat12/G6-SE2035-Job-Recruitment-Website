@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{fragments :: head('Verify Email')}"></head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Verify Email')}"></head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
 
-<nav th:replace="~{fragments :: navbar}"></nav>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
 <main class="auth-page flex-grow">
     <section class="auth-shell single-auth-shell">
@@ -55,7 +54,7 @@
     </section>
 </main>
 
-<footer th:replace="~{fragments :: footer}"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
 </body>
 </html>

@@ -47,7 +47,6 @@ public class AuthController {
         return "login";
     }
 
-
     @GetMapping("/forgot-password")
     public String showForgotPasswordPage(Principal principal) {
         if (principal != null) {
@@ -118,14 +117,13 @@ public class AuthController {
             return "reset-password";
         }
 
-        if (!passwordResetService.resetPassword(token, password)) {
-            model.addAttribute("error", "Password reset link is invalid or expired.");
+        if (!passwordResetService.resetPassword(token, passwordEncoder.encode(password))) {
+            model.addAttribute("error", "Failed to reset password. Link may be invalid or expired.");
             return "reset-password";
         }
 
         return "redirect:/login?resetSuccess=true";
     }
-
 
     @GetMapping("/verify-email")
     public String verifyEmail(@RequestParam String token) {
@@ -293,7 +291,6 @@ public class AuthController {
                 : "Account created successfully. Please verify your email before logging in. Demo mode is showing the link below.");
         return "verify-email-sent";
     }
-
 
     private String getBaseUrl(HttpServletRequest request) {
         return request.getScheme() + "://" + request.getServerName() +

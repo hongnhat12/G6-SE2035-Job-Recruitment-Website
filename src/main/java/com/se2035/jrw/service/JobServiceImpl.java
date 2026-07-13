@@ -19,6 +19,7 @@ import com.se2035.jrw.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +28,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class JobServiceImpl implements JobService {
+public class JobServiceImpl implements JobService{
     private final JobRepo jobRepo;
     private final CompanyRepo companyRepo;
     private final RecruiterRepo recruiterRepo;
@@ -50,12 +51,12 @@ public class JobServiceImpl implements JobService {
         Industry industry = industryRepo.findById(req.getIndustryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Industry not found"));
 
-        if (!recruiter.getCompany().getCompanyId().equals(company.getCompanyId())) {
+        if(!recruiter.getCompany().getCompanyId().equals(company.getCompanyId())) {
             throw new BadRequestException("Recruiter must belong to company");
         }
-        if (req.getSalaryMin() != null && req.getSalaryMax() != null
+        if(req.getSalaryMin() != null && req.getSalaryMax() != null
                 && req.getSalaryMin().compareTo(req.getSalaryMax()) > 0) {
-            throw new BadRequestException("Salary min > max");
+                throw new BadRequestException("Salary min > max");
         }
 
         Job job = Job.builder()
@@ -85,11 +86,11 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepo.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
 
-        if (job.getStatus() != JobStatus.PENDING && job.getStatus() != JobStatus.REJECTED) {
+        if(job.getStatus() != JobStatus.PENDING && job.getStatus() != JobStatus.REJECTED) {
             throw new BadRequestException("Only unapproved and undeleted jobs can be edited. " +
                     "Current status: " + job.getStatus());
         }
-        if (req.getSalaryMin() != null && req.getSalaryMax() != null
+        if(req.getSalaryMin() != null && req.getSalaryMax() != null
                 && req.getSalaryMin().compareTo(req.getSalaryMax()) > 0) {
             throw new BadRequestException("Salary min > max");
         }
@@ -127,6 +128,7 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
+    @Transactional
     public Job closeJob(Integer jobId) {
         Job job = jobRepo.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
@@ -174,5 +176,28 @@ public class JobServiceImpl implements JobService {
         job.setApprovedAt(LocalDateTime.now());
 
         return jobRepo.save(job);
+    }
+
+    @Override
+    public List<Job> findByRecruiterId(Integer recruiterId) {
+        Recruiter recruiter = recruiterRepo.findById(recruiterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Recruiter not found"));
+
+        List<Job> jobs = jobRepo.findByRecruiterRecruiterId(recruiterId);
+
+        return jobs;
+    }
+
+    @Override
+    public Job findById(Integer id) {
+        return jobRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+    }
+
+    @Override
+    public List<Job> getMyJobs(Recruiter recruiter) {
+        return jobRepo.findByRecruiterRecruiterIdAndStatusNot(
+                recruiter.getRecruiterId(),
+                JobStatus.DELETED);
     }
 }

@@ -1,5 +1,6 @@
 package com.se2035.jrw.service;
 
+import com.se2035.jrw.dto.CompanyRequest;
 import com.se2035.jrw.entity.Company;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +15,7 @@ public interface CompanyService {
 
     Company getCompanyById(Integer id);
 
-    void saveCompany(Company company);
+    void saveCompany(CompanyRequest companyRequest);
 
     void deleteCompanyById(Integer id);
 }

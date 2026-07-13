@@ -1,171 +1,105 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{fragments :: head('Create Account')}"></head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Sign Up')}"></head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
 
-<nav th:replace="~{fragments :: navbar}"></nav>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+<div th:replace="~{fragments/flash :: flash}"></div>
 
-<main class="auth-page flex-grow">
-    <section class="auth-shell">
-        <aside class="auth-hero">
-            <div class="auth-hero-badge">
-                <i class="fa-solid fa-briefcase"></i>
-                DreamJob Account
-            </div>
-            <h1>Create your account and start faster.</h1>
-            <p>
-                Join DreamJob as a candidate to apply for jobs, or as a recruiter to post jobs and manage applicants.
-            </p>
-
-            <div class="auth-feature-list">
-                <div class="auth-feature">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <div>
-                        <strong>For candidates</strong>
-                        <p class="!mt-1 !text-sm">Search jobs, save favorite jobs, submit CV and track applications.</p>
-                    </div>
-                </div>
-                <div class="auth-feature">
-                    <i class="fa-solid fa-building"></i>
-                    <div>
-                        <strong>For recruiters</strong>
-                        <p class="!mt-1 !text-sm">Create job posts, receive applications and update candidate status.</p>
-                    </div>
-                </div>
-                <div class="auth-feature">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    <div>
-                        <strong>Secure login</strong>
-                        <p class="!mt-1 !text-sm">Passwords are encrypted before being saved to the database.</p>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <section class="auth-card">
-            <div class="auth-card-header">
-                <div class="auth-icon">
-                    <i class="fa-solid fa-user-plus"></i>
-                </div>
-                <h2>Create Account</h2>
-                <p class="auth-subtitle">Fill in your information to create a new DreamJob account.</p>
+<main class="flex-grow flex items-center justify-center py-20 px-4 bg-gray-50">
+    <div class="max-w-xl w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+        <div class="p-8">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Create a New Account</h2>
+                <p class="text-gray-500">Begin your career journey today</p>
             </div>
 
-            <div th:if="${error}" class="auth-alert auth-alert-error mb-4">
-                <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+            <div th:if="${error}" class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 text-red-700 text-sm flex items-center">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
                 <span th:text="${error}">Error message</span>
             </div>
 
-            <form th:action="@{/register}" method="post" class="auth-form" id="registerForm">
-                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-                <div class="auth-grid-2">
-                    <div class="auth-field">
-                        <label for="fullName">Full Name</label>
-                        <div class="auth-input-wrap">
-                            <i class="fa-regular fa-user"></i>
-                            <input id="fullName" class="auth-input has-icon" type="text" name="fullName"
-                                   th:value="${fullName}" required placeholder="Nguyen Van A">
-                        </div>
+            <form th:action="@{/register}" method="POST" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
+                        <input type="text" name="fullName" th:value="${fullName}" required class="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 transition sm:text-sm" placeholder="John Doe">
                     </div>
-
-                    <div class="auth-field">
-                        <label for="phone">Phone Number</label>
-                        <div class="auth-input-wrap">
-                            <i class="fa-solid fa-phone"></i>
-                            <input id="phone" class="auth-input has-icon" type="tel" name="phone"
-                                   th:value="${phone}" required pattern="\d{10}" maxlength="10"
-                                   placeholder="0901234567"
-                                   title="Phone number must be exactly 10 digits"
-                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="auth-field">
-                    <label for="email">Email Address</label>
-                    <div class="auth-input-wrap">
-                        <i class="fa-regular fa-envelope"></i>
-                        <input id="email" class="auth-input has-icon" type="email" name="email"
-                               th:value="${email}" required placeholder="example@email.com">
-                    </div>
-                </div>
-
-                <div class="auth-grid-2">
-                    <div class="auth-field">
-                        <label for="password">Password</label>
-                        <div class="auth-input-wrap">
-                            <i class="fa-solid fa-lock"></i>
-                            <input id="password" class="auth-input has-icon" type="password" name="password"
-                                   required minlength="6" placeholder="Minimum 6 characters">
-                        </div>
-                    </div>
-
-                    <div class="auth-field">
-                        <label for="confirmPassword">Confirm Password</label>
-                        <div class="auth-input-wrap">
-                            <i class="fa-solid fa-key"></i>
-                            <input id="confirmPassword" class="auth-input has-icon" type="password" name="confirmPassword"
-                                   required minlength="6" placeholder="Re-enter password">
-                        </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+                        <input type="tel" name="phone" th:value="${phone}" required
+                               pattern="\d{10}" maxlength="10"
+                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 transition sm:text-sm"
+                               placeholder="0901234567"
+                               title="Phone number must be exactly 10 digits"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
                 </div>
 
                 <div>
-                    <span class="auth-label">Account Type</span>
-                    <div class="role-cards">
-                        <label class="role-card" for="role-candidate">
-                            <input type="radio" id="role-candidate" name="role" value="CANDIDATE"
-                                   th:checked="${selectedRole == null or selectedRole == 'CANDIDATE'}">
-                            <div class="role-card-body">
-                                <i class="fa-solid fa-user-tie"></i>
-                                <strong>Candidate</strong>
-                                <span>I want to find a job</span>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Professional Email</label>
+                    <input type="email" name="email" th:value="${email}" required class="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 transition sm:text-sm" placeholder="john.doe@example.com">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                        <input type="password" name="password" required class="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 transition sm:text-sm" placeholder="Minimum 6 characters">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Confirm Password</label>
+                        <input type="password" name="confirmPassword" required class="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 transition sm:text-sm" placeholder="Re-enter password">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2 font-bold text-teal-600">You are a?</label>
+                    <div class="grid grid-cols-2 gap-4 mt-2">
+                        <label for="role-jobseeker" class="relative flex p-4 border rounded-xl cursor-pointer hover:bg-teal-50 transition border-gray-200 group has-[:checked]:border-teal-500 has-[:checked]:bg-teal-50">
+                            <input type="radio" id="role-jobseeker" name="role" value="JOBSEEKER" th:checked="${selectedRole == null or selectedRole == 'CANDIDATE' or selectedRole == 'JOBSEEKER'}" class="mt-1 h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300">
+                            <div class="ml-3">
+                                <span class="block text-sm font-bold text-gray-900">Candidate</span>
+                                <span class="block text-xs text-gray-500">I want to find a job</span>
                             </div>
                         </label>
-
-                        <label class="role-card" for="role-recruiter">
-                            <input type="radio" id="role-recruiter" name="role" value="RECRUITER"
-                                   th:checked="${selectedRole == 'RECRUITER'}">
-                            <div class="role-card-body">
-                                <i class="fa-solid fa-building-user"></i>
-                                <strong>Recruiter</strong>
-                                <span>I want to post jobs</span>
+                        <label for="role-recruiter" class="relative flex p-4 border rounded-xl cursor-pointer hover:bg-teal-50 transition border-gray-200 group has-[:checked]:border-teal-500 has-[:checked]:bg-teal-50">
+                            <input type="radio" id="role-recruiter" name="role" value="RECRUITER" th:checked="${selectedRole == 'RECRUITER'}" class="mt-1 h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300">
+                            <div class="ml-3">
+                                <span class="block text-sm font-bold text-gray-900">Recruiter</span>
+                                <span class="block text-xs text-gray-500">I want to post jobs</span>
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <div id="company-section" class="auth-field hidden-by-role">
-                    <label for="companyName">Company Name</label>
-                    <div class="auth-input-wrap">
-                        <i class="fa-regular fa-building"></i>
-                        <input id="companyName" class="auth-input has-icon" type="text" name="companyName"
-                               th:value="${companyName}" placeholder="Your company name">
-                    </div>
-                    <p class="auth-note mt-2">Required for recruiter accounts. Existing company names will be reused.</p>
+                <div id="company-section" class="hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Company Name</label>
+                    <input type="text" id="companyName" name="companyName" th:value="${companyName}" class="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 transition sm:text-sm" placeholder="Your company name">
+                    <p class="text-xs text-gray-400 mt-2">Required for recruiter accounts. Existing company names will be reused.</p>
                 </div>
 
-                <p class="auth-note">
-                    By creating an account, you agree to DreamJob Terms and Privacy Policy.
-                </p>
+                <div class="text-xs text-gray-500">
+                    By clicking Create Account, you agree to our <a href="#" class="text-teal-600 font-medium">Terms</a> and <a href="#" class="text-teal-600 font-medium">Privacy Policy</a>.
+                </div>
 
-                <button type="submit" class="auth-btn">
-                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition">
                     Create Account
                 </button>
             </form>
 
-            <p class="auth-footer-text">
-                Already have an account?
-                <a th:href="@{/login}" class="auth-link">Log in here</a>
-            </p>
-        </section>
-    </section>
+            <div class="mt-8 text-center border-t border-gray-100 pt-8">
+                <p class="text-sm text-gray-600">
+                    Already have an account? 
+                    <a th:href="@{/login}" class="font-bold text-teal-600 hover:text-teal-500">Log in here</a>
+                </p>
+            </div>
+        </div>
+    </div>
 </main>
 
-<footer th:replace="~{fragments :: footer}"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
 <script>
     function toggleCompanySection() {
@@ -175,14 +109,21 @@
         if (!recruiterRadio || !companySection || !companyInput) return;
 
         const isRecruiter = recruiterRadio.checked;
-        companySection.classList.toggle('hidden-by-role', !isRecruiter);
-        companyInput.required = isRecruiter;
+        if (isRecruiter) {
+            companySection.classList.remove('hidden');
+            companyInput.required = true;
+        } else {
+            companySection.classList.add('hidden');
+            companyInput.required = false;
+            companyInput.value = '';
+        }
     }
 
     document.querySelectorAll('input[name="role"]').forEach(function (radio) {
         radio.addEventListener('change', toggleCompanySection);
     });
 
+    // Run on startup
     toggleCompanySection();
 </script>
 

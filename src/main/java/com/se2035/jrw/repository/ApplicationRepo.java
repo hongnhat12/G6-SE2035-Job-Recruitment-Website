@@ -27,4 +27,6 @@ public interface ApplicationRepo extends JpaRepository<Application, Integer> {
 
     @Query("SELECT a.status, COUNT(a) FROM Application a GROUP BY a.status")
     List<Object[]> countApplicationsByStatus();
+
+    List<Application> findByJobJobId(Integer jobId);
 }

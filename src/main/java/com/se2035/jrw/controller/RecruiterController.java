@@ -1,9 +1,9 @@
 package com.se2035.jrw.controller;
 
+import com.se2035.jrw.dto.JobRequest;
+import com.se2035.jrw.dto.RecruiterDashboardDTO;
 import com.se2035.jrw.entity.*;
-import com.se2035.jrw.enums.ApplicationStatus;
-import com.se2035.jrw.enums.JobStatus;
-import com.se2035.jrw.repository.*;
+import com.se2035.jrw.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -11,260 +11,169 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.math.BigDecimal;
-import java.security.Principal;
-import java.time.LocalDate;
 import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/recruiter")
 public class RecruiterController {
 
-    private final UserRepo userRepo;
-    private final RecruiterRepo recruiterRepo;
-    private final JobRepo jobRepo;
-    private final IndustryRepo industryRepo;
-    private final ApplicationRepo applicationRepo;
+    private final RecruiterService recruiterService;
+    private final JobService jobService;
+    private final IndustryService industryService;
+    private final ApplicationService applicationService;
 
     private Recruiter getCurrentRecruiter(Authentication auth) {
-        if (auth == null || !auth.isAuthenticated()) {
-            throw new IllegalStateException("You are not logged in");
-        }
-        String email = auth.getName();
-        return userRepo.findByEmail(email)
-                .flatMap(u -> recruiterRepo.findByUser_UserId(u.getUserId()))
-                .orElseThrow(() -> new IllegalStateException("Recruiter profile not found"));
+        return recruiterService.getCurrentRecruiter(auth);
     }
 
-    @GetMapping("/jobs/manage")
+    @GetMapping("/dashboard")
+    public String dashboard(Authentication auth, Model model) {
+        Recruiter recruiter = getCurrentRecruiter(auth);
+        RecruiterDashboardDTO stats = recruiterService.getDashboardStats(recruiter);
+
+        model.addAttribute("recruiter", recruiter);
+        model.addAttribute("totalJobs", stats.getTotalJobs());
+        model.addAttribute("activeJobs", stats.getActiveJobs());
+        model.addAttribute("pendingJobs", stats.getPendingJobs());
+        model.addAttribute("totalApplications", stats.getTotalApplications());
+        model.addAttribute("pendingApplications", stats.getPendingApplications());
+        model.addAttribute("shortlistedApplications", stats.getShortlistedApplications());
+        model.addAttribute("hiredApplications", stats.getHiredApplications());
+        model.addAttribute("rejectedApplications", stats.getRejectedApplications());
+        model.addAttribute("jobsByStatus", stats.getJobsByStatus());
+        model.addAttribute("applicationsByStatus", stats.getApplicationsByStatus());
+        model.addAttribute("applicantCountByJob", stats.getApplicantCountByJob());
+        model.addAttribute("recentJobs", stats.getRecentJobs());
+        model.addAttribute("recentApplications", stats.getRecentApplications());
+
+        return "recruiter/dashboard";
+    }
+
+    @GetMapping("/jobs")
     public String manageJobs(Authentication auth, Model model) {
-        try {
-            Recruiter recruiter = getCurrentRecruiter(auth);
-            List<Job> myJobs = jobRepo.findAll().stream()
-                    .filter(j -> j.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId()) 
-                              && j.getStatus() != JobStatus.DELETED)
-                    .toList();
-            model.addAttribute("jobs", myJobs);
-            return "recruiter/dashboard";
-        } catch (Exception e) {
-            return "redirect:/login";
-        }
+        Recruiter recruiter = getCurrentRecruiter(auth);
+        List<Job> myJobs = jobService.getMyJobs(recruiter);
+        model.addAttribute("jobs", myJobs);
+        return "recruiter/jobs";
     }
 
     @GetMapping("/jobs/create")
     public String showCreateForm(Authentication auth, Model model) {
-        try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            Job job = new Job();
-            job.setCompany(recruiter.getCompany());
-            model.addAttribute("job", job);
-            model.addAttribute("industries", industryRepo.findAll());
+            JobRequest request = new JobRequest();
+            request.setRecruiterId(recruiter.getRecruiterId());
+            request.setCompanyId(recruiter.getCompany().getCompanyId());
+            model.addAttribute("job", request);
+            model.addAttribute("industries", industryService.getAllIndustries());
             return "recruiter/job-form";
-        } catch (Exception e) {
-            return "redirect:/login";
-        }
     }
 
     @PostMapping("/jobs/create")
     public String createJob(
-            @ModelAttribute("job") Job job,
+            @ModelAttribute("job") JobRequest request,
             @RequestParam("industryId") Integer industryId,
             Authentication auth,
-            RedirectAttributes redirectAttributes,
-            Model model) {
+            RedirectAttributes redirectAttributes) {
 
-        try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            job.setRecruiter(recruiter);
-            job.setCompany(recruiter.getCompany());
+            request.setRecruiterId(recruiter.getRecruiterId());
+            request.setCompanyId(recruiter.getCompany().getCompanyId());
 
-            Industry ind = industryRepo.findById(industryId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid industry"));
-            job.setIndustry(ind);
+            jobService.createJob(request);
 
-            if (job.getSalaryMin() != null && job.getSalaryMax() != null 
-                    && job.getSalaryMin().compareTo(job.getSalaryMax()) > 0) {
-                model.addAttribute("errorMessage", "Salary Min must be less than or equal to Salary Max");
-                model.addAttribute("industries", industryRepo.findAll());
-                return "recruiter/job-form";
-            }
-
-            job.setStatus(JobStatus.PENDING);
-            jobRepo.save(job);
-            redirectAttributes.addFlashAttribute("success", "Job posting created successfully! Pending admin approval.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
-        }
-        return "redirect:/jobs/manage";
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Job posted successfully. Waiting for admin approval.");
+        return "redirect:/recruiter/jobs";
     }
 
     @GetMapping("/jobs/edit/{id}")
     public String showEditForm(@PathVariable Integer id, Authentication auth, Model model) {
-        try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            Job job = jobRepo.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Job not found"));
+            Job job = jobService.findById(id); 
 
             if (!job.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
                 throw new IllegalStateException("You do not have permission to edit this job");
             }
 
             model.addAttribute("job", job);
-            model.addAttribute("industries", industryRepo.findAll());
+            model.addAttribute("industries", industryService.getAllIndustries());
+
             return "recruiter/job-form";
-        } catch (Exception e) {
-            return "redirect:/jobs/manage";
-        }
     }
 
-    @PostMapping("/jobs/edit/{jobId}")
+    @PostMapping("/jobs/edit/{id}")
     public String editJob(
-            @PathVariable Integer jobId,
-            @ModelAttribute("job") Job jobForm,
-            @RequestParam("industryId") Integer industryId,
+            @PathVariable Integer id,
+            @ModelAttribute("job") JobRequest request,
             Authentication auth,
             RedirectAttributes redirectAttributes,
             Model model) {
 
-        try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            Job job = jobRepo.findById(jobId)
-                    .orElseThrow(() -> new IllegalArgumentException("Job not found"));
+            request.setRecruiterId(recruiter.getRecruiterId());
+            request.setCompanyId(recruiter.getCompany().getCompanyId());
 
-            if (!job.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
-                throw new IllegalStateException("You do not have permission to edit this job");
-            }
-
-            Industry ind = industryRepo.findById(industryId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid industry"));
-
-            if (jobForm.getSalaryMin() != null && jobForm.getSalaryMax() != null 
-                    && jobForm.getSalaryMin().compareTo(jobForm.getSalaryMax()) > 0) {
-                model.addAttribute("errorMessage", "Salary Min must be less than or equal to Salary Max");
-                model.addAttribute("industries", industryRepo.findAll());
-                return "recruiter/job-form";
-            }
-
-            job.setTitle(jobForm.getTitle());
-            job.setIndustry(ind);
-            job.setDescription(jobForm.getDescription());
-            job.setRequirement(jobForm.getRequirement());
-            job.setBenefit(jobForm.getBenefit());
-            job.setLocation(jobForm.getLocation());
-            job.setSalaryMin(jobForm.getSalaryMin());
-            job.setSalaryMax(jobForm.getSalaryMax());
-            job.setEmploymentType(jobForm.getEmploymentType());
-            job.setExperienceRequired(jobForm.getExperienceRequired());
-            job.setRequiredSkills(jobForm.getRequiredSkills());
-            job.setDeadline(jobForm.getDeadline());
-            
-            job.setStatus(JobStatus.PENDING);
-            jobRepo.save(job);
+            jobService.editJob(id, request);
 
             redirectAttributes.addFlashAttribute("success", "Job updated successfully! It will be reviewed by admin again.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
-        }
-        return "redirect:/jobs/manage";
+        return "redirect:/recruiter/jobs";
     }
 
     @PostMapping("/jobs/close/{id}")
     public String closeJob(@PathVariable Integer id, Authentication auth, RedirectAttributes redirectAttributes) {
-        try {
-            Recruiter recruiter = getCurrentRecruiter(auth);
-            Job job = jobRepo.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Job not found"));
-
-            if (!job.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
-                throw new IllegalStateException("You do not have permission to perform this action");
-            }
-
-            job.setStatus(JobStatus.CLOSED);
-            jobRepo.save(job);
+            jobService.closeJob(id);
             redirectAttributes.addFlashAttribute("success", "Job closed successfully.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/jobs/manage";
+        return "redirect:/recruiter/jobs";
     }
 
     @PostMapping("/jobs/delete/{id}")
     public String deleteJob(@PathVariable Integer id, Authentication auth, RedirectAttributes redirectAttributes) {
-        try {
-            Recruiter recruiter = getCurrentRecruiter(auth);
-            Job job = jobRepo.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Job not found"));
-
-            if (!job.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
-                throw new IllegalStateException("You do not have permission to perform this action");
-            }
-
-            job.setStatus(JobStatus.DELETED);
-            jobRepo.save(job);
+            jobService.deleteJob(id);
             redirectAttributes.addFlashAttribute("success", "Job deleted successfully.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/jobs/manage";
+        return "redirect:/recruiter/jobs";
     }
 
-    @GetMapping("/applications/manage")
+    @GetMapping("/applications")
     public String manageApplications(Authentication auth, Model model) {
-        try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            List<Application> applications = applicationRepo
-                    .findByJob_Recruiter_RecruiterIdOrderByAppliedAtDesc(recruiter.getRecruiterId());
+            List<Application> applications = applicationService.findByRecruiterId(recruiter.getRecruiterId());
             model.addAttribute("applications", applications);
             return "recruiter/applications";
-        } catch (Exception e) {
-            return "redirect:/login";
-        }
     }
 
     @GetMapping("/applications/job/{jobId}")
     public String applicationsByJob(@PathVariable Integer jobId, Authentication auth, Model model) {
-        try {
             Recruiter recruiter = getCurrentRecruiter(auth);
-            Job job = jobRepo.findById(jobId)
-                    .orElseThrow(() -> new IllegalArgumentException("Job not found"));
+            Job job = jobService.findById(jobId);
 
             if (!job.getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
                 throw new IllegalStateException("You do not have permission to view applications for this job");
             }
 
-            List<Application> applications = applicationRepo.findByJob_JobIdOrderByAppliedAtDesc(jobId);
+            List<Application> applications = applicationService.findByJobId(jobId);
             model.addAttribute("applications", applications);
             model.addAttribute("jobId", jobId);
             return "recruiter/applications";
-        } catch (Exception e) {
-            return "redirect:/jobs/manage";
-        }
     }
 
     @PostMapping("/applications/status")
-    public String updateApplicationStatus(
-            @RequestParam Integer applicationId,
-            @RequestParam String status,
-            Authentication auth,
-            RedirectAttributes redirectAttributes) {
-
-        try {
-            Recruiter recruiter = getCurrentRecruiter(auth);
-            Application app = applicationRepo.findById(applicationId)
-                    .orElseThrow(() -> new IllegalArgumentException("Application not found"));
-
-            if (!app.getJob().getRecruiter().getRecruiterId().equals(recruiter.getRecruiterId())) {
-                throw new IllegalStateException("You do not have permission to review this application");
+    public String updateApplicationStatus(@RequestParam Integer applicationId,
+                                          @RequestParam String status,
+                                          Authentication auth,
+                                          RedirectAttributes redirectAttributes) {
+        Recruiter recruiter = getCurrentRecruiter(auth);
+        switch (status.toUpperCase()) {
+            case "SHORTLISTED" -> applicationService.shortlist(applicationId, recruiter.getRecruiterId());
+            case "REJECTED" -> applicationService.reject(applicationId, recruiter.getRecruiterId());
+            case "HIRED" -> applicationService.hire(applicationId, recruiter.getRecruiterId());
+            default -> {
+                redirectAttributes.addFlashAttribute("error", "Invalid status value.");
+                return "redirect:/recruiter/applications";
             }
-
-            ApplicationStatus appStatus = ApplicationStatus.valueOf(status.toUpperCase());
-            app.setStatus(appStatus);
-            applicationRepo.save(app);
-
-            redirectAttributes.addFlashAttribute("success", "Application status updated successfully.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/applications/manage";
+        redirectAttributes.addFlashAttribute("success", "Application status updated successfully.");
+        return "redirect:/recruiter/applications";
     }
 }
