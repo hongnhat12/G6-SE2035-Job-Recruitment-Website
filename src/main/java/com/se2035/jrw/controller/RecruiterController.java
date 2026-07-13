@@ -1,6 +1,7 @@
 package com.se2035.jrw.controller;
 
 import com.se2035.jrw.dto.JobRequest;
+import com.se2035.jrw.dto.RecruiterDashboardDTO;
 import com.se2035.jrw.entity.*;
 import com.se2035.jrw.service.*;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +30,23 @@ public class RecruiterController {
     @GetMapping("/dashboard")
     public String dashboard(Authentication auth, Model model) {
         Recruiter recruiter = getCurrentRecruiter(auth);
+        RecruiterDashboardDTO stats = recruiterService.getDashboardStats(recruiter);
+
         model.addAttribute("recruiter", recruiter);
-        model.addAllAttributes(recruiterService.getDashboardStats(recruiter));
+        model.addAttribute("totalJobs", stats.getTotalJobs());
+        model.addAttribute("activeJobs", stats.getActiveJobs());
+        model.addAttribute("pendingJobs", stats.getPendingJobs());
+        model.addAttribute("totalApplications", stats.getTotalApplications());
+        model.addAttribute("pendingApplications", stats.getPendingApplications());
+        model.addAttribute("shortlistedApplications", stats.getShortlistedApplications());
+        model.addAttribute("hiredApplications", stats.getHiredApplications());
+        model.addAttribute("rejectedApplications", stats.getRejectedApplications());
+        model.addAttribute("jobsByStatus", stats.getJobsByStatus());
+        model.addAttribute("applicationsByStatus", stats.getApplicationsByStatus());
+        model.addAttribute("applicantCountByJob", stats.getApplicantCountByJob());
+        model.addAttribute("recentJobs", stats.getRecentJobs());
+        model.addAttribute("recentApplications", stats.getRecentApplications());
+
         return "recruiter/dashboard";
     }
 

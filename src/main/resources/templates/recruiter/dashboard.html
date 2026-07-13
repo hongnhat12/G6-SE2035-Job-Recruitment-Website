@@ -2,7 +2,6 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{fragments/head :: head('Recruiter Dashboard')}"></th:block>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
 
@@ -70,38 +69,40 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-100 text-sm">
                         <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Job Title</th>
-                                <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Posted Date</th>
-                                <th class="px-6 py-3.5 text-center font-semibold text-gray-600">Applicants</th>
-                                <th class="px-6 py-3.5 text-center font-semibold text-gray-600">Status</th>
-                                <th class="px-6 py-3.5 text-center font-semibold text-gray-600">Action</th>
-                            </tr>
+                        <tr>
+                            <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Job Title</th>
+                            <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Posted Date</th>
+                            <th class="px-6 py-3.5 text-center font-semibold text-gray-600">Applicants</th>
+                            <th class="px-6 py-3.5 text-center font-semibold text-gray-600">Status</th>
+                            <th class="px-6 py-3.5 text-center font-semibold text-gray-600">Action</th>
+                        </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
-                            <tr th:each="job : ${recentJobs}" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-semibold text-gray-900" th:text="${job.title}">Title</td>
-                                <td class="px-6 py-4 text-gray-500" th:text="${#temporals.format(job.createdAt, 'dd/MM/yyyy')}">Date</td>
-                                <td class="px-6 py-4 text-center text-gray-500" th:text="${job.applications != null ? job.applications.size() : 0}">0</td>
-                                <td class="px-6 py-4 text-center">
+                        <tr th:each="job : ${recentJobs}" class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 font-semibold text-gray-900" th:text="${job.title}">Title</td>
+                            <td class="px-6 py-4 text-gray-500" th:text="${#temporals.format(job.createdAt, 'dd/MM/yyyy')}">Date</td>
+                            <td class="px-6 py-4 text-center text-gray-500"
+                                th:text="${applicantCountByJob.containsKey(job.jobId) ? applicantCountByJob.get(job.jobId) : 0}">0</td>
+                            <td class="px-6 py-4 text-center">
                                     <span th:switch="${job.status.name()}" class="inline-flex">
                                         <span th:case="'APPROVED'" class="bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 text-xs font-bold rounded-lg">Active</span>
                                         <span th:case="'PENDING'" class="bg-yellow-50 text-yellow-700 border border-yellow-200 px-2.5 py-1 text-xs font-bold rounded-lg">Pending</span>
                                         <span th:case="'CLOSED'" class="bg-gray-50 text-gray-600 border border-gray-200 px-2.5 py-1 text-xs font-bold rounded-lg">Closed</span>
                                         <span th:case="'REJECTED'" class="bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 text-xs font-bold rounded-lg">Rejected</span>
+                                        <span th:case="'EXPIRED'" class="bg-gray-50 text-gray-500 border border-gray-200 px-2.5 py-1 text-xs font-bold rounded-lg">Expired</span>
                                         <span th:case="*" class="bg-gray-50 text-gray-600 border border-gray-200 px-2.5 py-1 text-xs font-bold rounded-lg" th:text="${job.status.name()}">Status</span>
                                     </span>
-                                </td>
-                                <td class="px-6 py-4 text-center whitespace-nowrap">
-                                    <a th:href="@{/recruiter/jobs/edit/{id}(id=${job.jobId})}" class="text-teal-600 hover:text-teal-700 font-bold">Manage</a>
-                                </td>
-                            </tr>
-                            <tr th:if="${#lists.isEmpty(recentJobs)}">
-                                <td colspan="5" class="px-6 py-12 text-center text-gray-400">
-                                    <i class="fa-solid fa-inbox text-2xl mb-2 block"></i>
-                                    You have not posted any jobs yet
-                                </td>
-                            </tr>
+                            </td>
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                <a th:href="@{/recruiter/jobs/edit/{id}(id=${job.jobId})}" class="text-teal-600 hover:text-teal-700 font-bold">Manage</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentJobs)}">
+                            <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                                <i class="fa-solid fa-inbox text-2xl mb-2 block"></i>
+                                You have not posted any jobs yet
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -116,38 +117,39 @@
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-100 text-sm">
                         <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Applicant</th>
-                                <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Job Title</th>
-                                <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Applied Date</th>
-                                <th class="px-6 py-3.5 text-center font-semibold text-gray-600">Status</th>
-                                <th class="px-6 py-3.5 text-center font-semibold text-gray-600">Action</th>
-                            </tr>
+                        <tr>
+                            <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Applicant</th>
+                            <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Job Title</th>
+                            <th class="px-6 py-3.5 text-left font-semibold text-gray-600">Applied Date</th>
+                            <th class="px-6 py-3.5 text-center font-semibold text-gray-600">Status</th>
+                            <th class="px-6 py-3.5 text-center font-semibold text-gray-600">Action</th>
+                        </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
-                            <tr th:each="app : ${recentApplications}" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-semibold text-gray-900" th:text="${app.jobSeeker.fullName}">Name</td>
-                                <td class="px-6 py-4 text-gray-500" th:text="${app.job.title}">Job Title</td>
-                                <td class="px-6 py-4 text-gray-500" th:text="${#temporals.format(app.appliedAt, 'dd/MM/yyyy')}">Date</td>
-                                <td class="px-6 py-4 text-center">
+                        <tr th:each="app : ${recentApplications}" class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 font-semibold text-gray-900" th:text="${app.candidate.fullName}">Name</td>
+                            <td class="px-6 py-4 text-gray-500" th:text="${app.job.title}">Job Title</td>
+                            <td class="px-6 py-4 text-gray-500" th:text="${#temporals.format(app.appliedAt, 'dd/MM/yyyy')}">Date</td>
+                            <td class="px-6 py-4 text-center">
                                     <span th:switch="${app.status.name()}" class="inline-flex">
                                         <span th:case="'PENDING'" class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 text-xs font-bold rounded-lg">Pending</span>
                                         <span th:case="'SHORTLISTED'" class="bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 text-xs font-bold rounded-lg">Shortlisted</span>
                                         <span th:case="'HIRED'" class="bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 text-xs font-bold rounded-lg">Hired</span>
                                         <span th:case="'REJECTED'" class="bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 text-xs font-bold rounded-lg">Rejected</span>
+                                        <span th:case="'WITHDRAWN'" class="bg-gray-50 text-gray-600 border border-gray-200 px-2.5 py-1 text-xs font-bold rounded-lg">Withdrawn</span>
                                         <span th:case="*" class="bg-gray-50 text-gray-600 border border-gray-200 px-2.5 py-1 text-xs font-bold rounded-lg" th:text="${app.status.name()}">Status</span>
                                     </span>
-                                </td>
-                                <td class="px-6 py-4 text-center whitespace-nowrap">
-                                    <a th:href="@{/recruiter/applications/{id}(id=${app.applicationId})}" class="text-teal-600 hover:text-teal-700 font-bold">Review</a>
-                                </td>
-                            </tr>
-                            <tr th:if="${#lists.isEmpty(recentApplications)}">
-                                <td colspan="5" class="px-6 py-12 text-center text-gray-400">
-                                    <i class="fa-solid fa-inbox text-2xl mb-2 block"></i>
-                                    No applications yet
-                                </td>
-                            </tr>
+                            </td>
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
+                                <a th:href="@{/recruiter/applications/job/{jobId}(jobId=${app.job.jobId})}" class="text-teal-600 hover:text-teal-700 font-bold">Review</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentApplications)}">
+                            <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                                <i class="fa-solid fa-inbox text-2xl mb-2 block"></i>
+                                No applications yet
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -158,51 +160,6 @@
 </main>
 
 <footer th:replace="~{fragments/footer :: footer}"></footer>
-
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    const jobsByStatus = /*[[${jobsByStatus}]]*/ {};
-    const applicationsByStatus = /*[[${applicationsByStatus}]]*/ {};
-    /*]]>*/
-
-    const jobStatusColors = { APPROVED: '#10B981', PENDING: '#F59E0B', CLOSED: '#9CA3AF', REJECTED: '#EF4444' };
-    const appStatusColors = { PENDING: '#3B82F6', SHORTLISTED: '#F59E0B', HIRED: '#10B981', REJECTED: '#EF4444' };
-
-    function colorsFor(labels, map, fallback) {
-        return labels.map(l => map[l] || fallback);
-    }
-
-    function makeChart(id, type, labels, data, colors) {
-        new Chart(document.getElementById(id), {
-            type: type,
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Count',
-                    data: data,
-                    backgroundColor: colors,
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: {
-                        display: type !== 'bar',
-                        position: 'bottom'
-                    }
-                },
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-    }
-
-    const jobLabels = Object.keys(jobsByStatus);
-    makeChart('jobStatusChart', 'doughnut', jobLabels, Object.values(jobsByStatus), colorsFor(jobLabels, jobStatusColors, '#9CA3AF'));
-
-    const appLabels = Object.keys(applicationsByStatus);
-    makeChart('applicationStatusChart', 'doughnut', appLabels, Object.values(applicationsByStatus), colorsFor(appLabels, appStatusColors, '#9CA3AF'));
-</script>
 
 </body>
 </html>

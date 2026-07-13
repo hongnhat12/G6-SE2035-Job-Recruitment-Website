@@ -80,8 +80,4 @@ public interface JobRepo extends JpaRepository<Job, Integer> {
     List<Job> findByRecruiterRecruiterIdAndStatusNot(
             Integer recruiterId,
             JobStatus status);
-
-    Long countByRecruiterRecruiterId(Integer recruiterId);
-
-    Long countByRecruiterRecruiterIdandStatus(Integer recruiterId, JobStatus status)
 }
