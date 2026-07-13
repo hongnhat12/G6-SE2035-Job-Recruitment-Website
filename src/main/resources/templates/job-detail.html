@@ -7,19 +7,7 @@
 <nav th:replace="~{fragments :: navbar}"></nav>
 <div th:replace="~{fragments :: flash}"></div>
 
-    <!-- Admin Warning View -->
-    <div sec:authorize="hasRole('ADMIN')" class="max-w-md mx-auto my-20 p-8 bg-white border border-red-100 rounded-3xl shadow-xl text-center">
-        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
-            <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
-        </div>
-        <h2 class="text-xl font-bold text-gray-900 mb-2">Access Restricted</h2>
-        <p class="text-sm text-gray-500 mb-6">Admin accounts cannot access features designed for candidates or recruiters.</p>
-        <a th:href="@{/admin/dashboard}" class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-md text-sm">Go to Dashboard</a>
-    </div>
-
-    <!-- Regular Client View -->
-    <div sec:authorize="!hasRole('ADMIN')">
-        <div class="bg-teal-50 py-10">
+    <div class="bg-teal-50 py-10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div class="flex items-center gap-6">
@@ -161,7 +149,6 @@
                 </div>
             </div>
         </main>
-    </div>
 
 <footer th:replace="~{fragments :: footer}"></footer>
 
