@@ -14,8 +14,8 @@
             </div>
 
             <div class="hidden md:flex items-center space-x-8">
-                <a sec:authorize="!hasRole('ADMIN')" th:href="@{/}" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
-                <a sec:authorize="!hasRole('ADMIN')" th:href="@{/jobs}" class="text-gray-600 hover:text-teal-600 font-medium transition">Search Jobs</a>
+                <a sec:authorize="!hasRole('ADMIN') && !hasRole('RECRUITER')" th:href="@{/}" class="text-gray-600 hover:text-teal-600 font-medium transition">Home</a>
+                <a sec:authorize="!hasRole('ADMIN') && !hasRole('RECRUITER')" th:href="@{/jobs}" class="text-gray-600 hover:text-teal-600 font-medium transition">Search Jobs</a>
                 <div sec:authorize="hasRole('RECRUITER')" class="flex space-x-8">
                 </div>
                 <div sec:authorize="hasRole('CANDIDATE')" class="flex space-x-8">
@@ -45,8 +45,6 @@
                         </div>
                         <div sec:authorize="hasRole('RECRUITER')">
                             <a th:href="@{/recruiter/dashboard}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">Dashboard</a>
-                            <a th:href="@{/recruiter/jobs}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">Manage Jobs</a>
-                            <a th:href="@{/recruiter/applications}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">Manage Applications</a>
                         </div>
 
                         <div class="border-t border-gray-50 my-1"></div>
