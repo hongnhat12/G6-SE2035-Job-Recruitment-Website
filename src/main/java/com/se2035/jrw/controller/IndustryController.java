@@ -4,6 +4,8 @@ import com.se2035.jrw.dto.IndustryRequest;
 import com.se2035.jrw.entity.Industry;
 import com.se2035.jrw.service.IndustryService;
 
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -58,21 +60,15 @@ public class IndustryController {
 
     @PostMapping("/save")
     public String saveIndustry(
-            @ModelAttribute("industry") IndustryRequest industryRequest,
+            @Valid @ModelAttribute("industry") IndustryRequest industryRequest,
+            BindingResult bindingResult,
             RedirectAttributes redirectAttributes,
             Model model) {
 
-        boolean hasError = false;
-
-        if (industryRequest.getIndustryName() == null || industryRequest.getIndustryName().trim().isEmpty()) {
-            model.addAttribute("nameError", "Industry name cannot be blank");
-            hasError = true;
-        } else if (industryRequest.getIndustryName().length() > 100) {
-            model.addAttribute("nameError", "Industry name cannot exceed 100 characters");
-            hasError = true;
-        }
-
-        if (hasError) {
+        if (bindingResult.hasErrors()) {
+            if (bindingResult.hasFieldErrors("industryName")) {
+                model.addAttribute("nameError", bindingResult.getFieldError("industryName").getDefaultMessage());
+            }
             return "admin/industry/form";
         }
 

@@ -5,6 +5,7 @@ import com.se2035.jrw.enums.UserRole;
 import com.se2035.jrw.repository.UserRepo;
 import com.se2035.jrw.repository.CandidateRepo;
 import com.se2035.jrw.repository.RecruiterRepo;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -19,9 +20,14 @@ public class GlobalControllerAdvice {
     private final UserRepo userRepo;
     private final CandidateRepo candidateRepo;
     private final RecruiterRepo recruiterRepo;
+    private final HttpServletRequest request;
 
     @ModelAttribute
     public void addAttributes(Model model, Principal principal) {
+        if (request != null) {
+            String uri = request.getRequestURI();
+            model.addAttribute("isAdminPage", uri != null && uri.startsWith("/admin"));
+        }
         if (principal != null) {
             String email = principal.getName();
             userRepo.findByEmail(email).ifPresent(user -> {
