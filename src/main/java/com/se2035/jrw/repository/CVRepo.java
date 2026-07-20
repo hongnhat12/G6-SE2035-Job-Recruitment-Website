@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface CVRepo extends JpaRepository<CV, Integer> {
     List<CV> findByCandidate(Candidate candidate);
     Optional<CV> findByCandidateAndIsDefaultTrue(Candidate candidate);
+    Optional<CV> findFirstByCandidate_CandidateIdAndIsDefaultTrueOrderByUploadedAtDesc(Integer candidateId);
+    Optional<CV> findFirstByCandidate_CandidateIdOrderByUploadedAtDesc(Integer candidateId);
 }

@@ -39,9 +39,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/", "/jobs", "/jobs/**", "/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/login", "/register", "/verify-email", "/resend-verification", "/forgot-password", "/reset-password").permitAll()
                 .requestMatchers("/my/**").hasRole("CANDIDATE")
+                .requestMatchers("/profile/seeker/**").hasRole("CANDIDATE")
+                .requestMatchers("/profile/recruiter/**").hasRole("RECRUITER")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/recruiter/**").hasRole("RECRUITER")
-                    .anyRequest().authenticated()
+                .requestMatchers("/recruiter/**").hasRole("RECRUITER")
+                .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")

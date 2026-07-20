@@ -117,7 +117,7 @@ public class AuthController {
             return "reset-password";
         }
 
-        if (!passwordResetService.resetPassword(token, passwordEncoder.encode(password))) {
+        if (!passwordResetService.resetPassword(token, password)) {
             model.addAttribute("error", "Failed to reset password. Link may be invalid or expired.");
             return "reset-password";
         }

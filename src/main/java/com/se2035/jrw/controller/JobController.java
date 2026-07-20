@@ -8,6 +8,7 @@ import com.se2035.jrw.repository.CandidateRepo;
 import com.se2035.jrw.repository.JobRepo;
 import com.se2035.jrw.repository.UserRepo;
 import com.se2035.jrw.service.ApplicationService;
+import com.se2035.jrw.service.CVService;
 import com.se2035.jrw.service.SavedJobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/jobs")
@@ -29,6 +29,7 @@ public class JobController {
     private final JobRepo jobRepo;
     private final SavedJobService savedJobService;
     private final ApplicationService applicationService;
+    private final CVService cvService;
     private final SecurityUtils securityUtils;
     private final UserRepo userRepo;
     private final CandidateRepo candidateRepo;
@@ -115,7 +116,9 @@ public class JobController {
                 candidateRepo.findByUser_UserId(user.getUserId()).ifPresent(c -> {
                     model.addAttribute("hasApplied", applicationService.hasApplied(c.getCandidateId(), id));
                     model.addAttribute("isSaved", savedJobService.isSaved(c.getCandidateId(), id));
-                    model.addAttribute("cvList", c.getCvList());
+                    model.addAttribute("cvList", cvService.getCurrentCv(c.getCandidateId())
+                            .map(List::of)
+                            .orElseGet(List::of));
                 });
             });
         }

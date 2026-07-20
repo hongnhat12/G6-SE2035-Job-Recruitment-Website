@@ -53,6 +53,12 @@ public class Candidate {
     @Column(name = "Skills", length = 500)
     private String skills;
 
+    @Column(name = "Experience", columnDefinition = "NVARCHAR(MAX)")
+    private String experience;
+
+    @Column(name = "Education", columnDefinition = "NVARCHAR(MAX)")
+    private String education;
+
     // CV files attached to this candidate
     @OneToMany(mappedBy = "candidate", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
