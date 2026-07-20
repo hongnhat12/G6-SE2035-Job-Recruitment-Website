@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface JobService {
     Job createJob(JobRequest req);
@@ -31,4 +32,18 @@ public interface JobService {
     Job findById(Integer id);
 
     List<Job> getMyJobs(Recruiter recruiter);
+
+    Page<Job> searchApprovedJobs(String keyword, String location, String employmentType, String industry, Pageable pageable);
+
+    List<String> findDistinctLocations();
+
+    List<String> findDistinctEmploymentTypes();
+
+    List<String> findDistinctIndustries();
+
+    Optional<Job> findJobDetailWithAssociations(Integer id);
+
+    List<Job> findLatestJobs();
+
+    List<Job> findHottestJobs();
 }

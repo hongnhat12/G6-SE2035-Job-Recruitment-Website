@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -199,5 +200,54 @@ public class JobServiceImpl implements JobService{
         return jobRepo.findByRecruiterRecruiterIdAndStatusNot(
                 recruiter.getRecruiterId(),
                 JobStatus.DELETED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Job> searchApprovedJobs(String keyword, String location, String employmentType, String industry, Pageable pageable) {
+        return jobRepo.searchApprovedJobs(
+                JobStatus.APPROVED,
+                (keyword == null || keyword.trim().isEmpty()) ? null : keyword.trim(),
+                (location == null || location.trim().isEmpty()) ? null : location.trim(),
+                (employmentType == null || employmentType.trim().isEmpty()) ? null : employmentType.trim(),
+                (industry == null || industry.trim().isEmpty()) ? null : industry.trim(),
+                pageable
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> findDistinctLocations() {
+        return jobRepo.findDistinctLocations(JobStatus.APPROVED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> findDistinctEmploymentTypes() {
+        return jobRepo.findDistinctEmploymentTypes(JobStatus.APPROVED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> findDistinctIndustries() {
+        return jobRepo.findDistinctIndustries(JobStatus.APPROVED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Job> findJobDetailWithAssociations(Integer id) {
+        return jobRepo.findJobDetailWithAssociations(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Job> findLatestJobs() {
+        return jobRepo.findTop8ByStatusOrderByCreatedAtDesc(JobStatus.APPROVED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Job> findHottestJobs() {
+        return jobRepo.findTop8ByStatusOrderBySalaryMaxDesc(JobStatus.APPROVED);
     }
 }
