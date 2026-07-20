@@ -46,14 +46,24 @@ public class CompanyController {
 
     @GetMapping("/create")
     public String showCreateForm(Model model) {
-        model.addAttribute("company", new Company());
+        model.addAttribute("company", new CompanyRequest());
         return "admin/company/form";
     }
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable("id") Integer id, Model model) {
         Company company = companyService.getCompanyById(id);
-        model.addAttribute("company", company);
+        CompanyRequest dto = new CompanyRequest();
+        dto.setCompanyId(company.getCompanyId());
+        dto.setCompanyName(company.getCompanyName());
+        dto.setDescription(company.getDescription());
+        dto.setWebsite(company.getWebsite());
+        dto.setEmail(company.getEmail());
+        dto.setPhone(company.getPhone());
+        dto.setAddress(company.getAddress());
+        dto.setLogo(company.getLogo());
+        dto.setStatus(company.getStatus());
+        model.addAttribute("company", dto);
         return "admin/company/form";
     }
 

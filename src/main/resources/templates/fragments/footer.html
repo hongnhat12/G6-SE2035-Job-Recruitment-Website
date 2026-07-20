@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <footer th:fragment="footer" class="bg-gray-900 text-white py-12 mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -17,12 +18,12 @@
             <div>
                 <h4 class="text-lg font-semibold mb-4">For Candidates</h4>
                 <ul class="space-y-2 text-gray-400">
-                    <li><a th:href="@{/jobs}" class="hover:text-teal-500 transition">Search Jobs</a></li>
-                    <li><a th:href="@{/my/saved-jobs}" class="hover:text-teal-500 transition">Saved Jobs</a></li>
-                    <li><a th:href="@{/my/applications}" class="hover:text-teal-500 transition">My Applications</a></li>
+                    <li sec:authorize="!hasRole('ADMIN') && !hasRole('RECRUITER')"><a th:href="@{/jobs}" class="hover:text-teal-500 transition">Search Jobs</a></li>
+                    <li sec:authorize="hasRole('CANDIDATE')"><a th:href="@{/my/saved-jobs}" class="hover:text-teal-500 transition">Saved Jobs</a></li>
+                    <li sec:authorize="hasRole('CANDIDATE')"><a th:href="@{/my/applications}" class="hover:text-teal-500 transition">My Applications</a></li>
                 </ul>
             </div>
-            <div>
+            <div sec:authorize="!hasRole('ADMIN') && !hasRole('CANDIDATE')">
                 <h4 class="text-lg font-semibold mb-4">For Recruiter</h4>
                 <ul class="space-y-2 text-gray-400">
                     <li><a th:href="@{/recruiter/jobs/create}" class="hover:text-teal-500 transition">Post a Job</a></li>

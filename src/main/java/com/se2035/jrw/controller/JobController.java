@@ -5,9 +5,9 @@ import com.se2035.jrw.entity.Candidate;
 import com.se2035.jrw.entity.Job;
 import com.se2035.jrw.enums.JobStatus;
 import com.se2035.jrw.repository.CandidateRepo;
-import com.se2035.jrw.repository.JobRepo;
 import com.se2035.jrw.repository.UserRepo;
 import com.se2035.jrw.service.ApplicationService;
+import com.se2035.jrw.service.JobService;
 import com.se2035.jrw.service.SavedJobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,7 +26,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JobController {
 
-    private final JobRepo jobRepo;
+    private final JobService jobService;
     private final SavedJobService savedJobService;
     private final ApplicationService applicationService;
     private final SecurityUtils securityUtils;
@@ -43,12 +43,14 @@ public class JobController {
             @RequestParam(defaultValue = "9") int size,
             Model model) {
 
-        Page<Job> jobPage = jobRepo.searchApprovedJobs(
-                JobStatus.APPROVED,
-                (keyword == null || keyword.trim().isEmpty()) ? null : keyword.trim(),
-                (location == null || location.trim().isEmpty()) ? null : location.trim(),
-                (employmentType == null || employmentType.trim().isEmpty()) ? null : employmentType.trim(),
-                (industry == null || industry.trim().isEmpty()) ? null : industry.trim(),
+        page = Math.max(page, 0);
+        size = Math.max(1, Math.min(size, 100));
+
+        Page<Job> jobPage = jobService.searchApprovedJobs(
+                keyword,
+                location,
+                employmentType,
+                industry,
                 PageRequest.of(page, size)
         );
 
@@ -56,10 +58,11 @@ public class JobController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", jobPage.getTotalPages());
         model.addAttribute("totalElements", jobPage.getTotalElements());
+        model.addAttribute("size", size);
 
-        model.addAttribute("locations", jobRepo.findDistinctLocations(JobStatus.APPROVED));
-        model.addAttribute("employmentTypes", jobRepo.findDistinctEmploymentTypes(JobStatus.APPROVED));
-        model.addAttribute("industries", jobRepo.findDistinctIndustries(JobStatus.APPROVED));
+        model.addAttribute("locations", jobService.findDistinctLocations());
+        model.addAttribute("employmentTypes", jobService.findDistinctEmploymentTypes());
+        model.addAttribute("industries", jobService.findDistinctIndustries());
 
         model.addAttribute("keyword", keyword);
         model.addAttribute("location", location);
@@ -75,7 +78,7 @@ public class JobController {
             Authentication auth,
             Model model) {
 
-        Job job = jobRepo.findJobDetailWithAssociations(id)
+        Job job = jobService.findJobDetailWithAssociations(id)
                 .orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
         if (job.getStatus() != JobStatus.APPROVED) {
@@ -100,7 +103,7 @@ public class JobController {
 
         model.addAttribute("job", job);
 
-        List<Job> similarJobs = jobRepo.searchApprovedJobs(JobStatus.APPROVED, null, null, null, 
+        List<Job> similarJobs = jobService.searchApprovedJobs(null, null, null, 
                 job.getIndustry() != null ? job.getIndustry().getIndustryName() : null, 
                 PageRequest.of(0, 4))
                 .getContent().stream()

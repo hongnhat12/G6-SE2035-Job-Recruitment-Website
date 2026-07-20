@@ -54,7 +54,11 @@ public class IndustryController {
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable("id") Integer id, Model model) {
         Industry industry = industryService.getIndustryById(id);
-        model.addAttribute("industry", industry);
+        IndustryRequest dto = new IndustryRequest();
+        dto.setIndustryId(industry.getIndustryId());
+        dto.setIndustryName(industry.getIndustryName());
+        dto.setDescription(industry.getDescription());
+        model.addAttribute("industry", dto);
         return "admin/industry/form";
     }
 
