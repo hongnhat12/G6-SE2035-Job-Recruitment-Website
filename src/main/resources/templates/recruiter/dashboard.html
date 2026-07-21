@@ -84,13 +84,14 @@
                             <td class="px-6 py-4 text-center text-gray-500"
                                 th:text="${applicantCountByJob.containsKey(job.jobId) ? applicantCountByJob.get(job.jobId) : 0}">0</td>
                             <td class="px-6 py-4 text-center">
-                                        <span th:switch="${job.status.name()}" class="inline-flex">
-                                            <span th:case="'APPROVED'" class="bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 text-xs font-bold rounded-lg">Active</span>
-                                            <span th:case="'PENDING'" class="bg-yellow-50 text-yellow-700 border border-yellow-200 px-2.5 py-1 text-xs font-bold rounded-lg">Pending</span>
-                                            <span th:case="'CLOSED'" class="bg-gray-50 text-gray-600 border border-gray-200 px-2.5 py-1 text-xs font-bold rounded-lg">Closed</span>
-                                            <span th:case="'REJECTED'" class="bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 text-xs font-bold rounded-lg">Rejected</span>
-                                            <span th:case="*" class="bg-gray-50 text-gray-600 border border-gray-200 px-2.5 py-1 text-xs font-bold rounded-lg" th:text="${job.status.name()}">Status</span>
-                                        </span>
+                                    <span th:switch="${job.status.name()}" class="inline-flex">
+                                        <span th:case="'APPROVED'" class="bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 text-xs font-bold rounded-lg">Active</span>
+                                        <span th:case="'PENDING'" class="bg-yellow-50 text-yellow-700 border border-yellow-200 px-2.5 py-1 text-xs font-bold rounded-lg">Pending</span>
+                                        <span th:case="'CLOSED'" class="bg-gray-50 text-gray-600 border border-gray-200 px-2.5 py-1 text-xs font-bold rounded-lg">Closed</span>
+                                        <span th:case="'REJECTED'" class="bg-red-50 text-red-700 border border-red-200 px-2.5 py-1 text-xs font-bold rounded-lg">Rejected</span>
+                                        <span th:case="'EXPIRED'" class="bg-gray-50 text-gray-500 border border-gray-200 px-2.5 py-1 text-xs font-bold rounded-lg">Expired</span>
+                                        <span th:case="*" class="bg-gray-50 text-gray-600 border border-gray-200 px-2.5 py-1 text-xs font-bold rounded-lg" th:text="${job.status.name()}">Status</span>
+                                    </span>
                             </td>
                             <td class="px-6 py-4 text-center whitespace-nowrap">
                                 <a th:href="@{/recruiter/jobs/edit/{id}(id=${job.jobId})}" class="text-teal-600 hover:text-teal-700 font-bold">Manage</a>

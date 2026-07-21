@@ -32,18 +32,4 @@ public interface JobService {
     Job findById(Integer id);
 
     List<Job> getMyJobs(Recruiter recruiter);
-
-    Page<Job> searchApprovedJobs(String keyword, String location, String employmentType, String industry, Pageable pageable);
-
-    List<String> findDistinctLocations();
-
-    List<String> findDistinctEmploymentTypes();
-
-    List<String> findDistinctIndustries();
-
-    Optional<Job> findJobDetailWithAssociations(Integer id);
-
-    List<Job> findLatestJobs();
-
-    List<Job> findHottestJobs();
 }

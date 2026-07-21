@@ -14,9 +14,21 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("latestJobs", jobService.findLatestJobs());
-        model.addAttribute("hottestJobs", jobService.findHottestJobs());
-        model.addAttribute("locations", jobService.findDistinctLocations());
+        model.addAttribute(
+                "latestJobs",
+                jobService.findLatestJobs()
+        );
+
+        model.addAttribute(
+                "hottestJobs",
+                jobService.findHottestJobs()
+        );
+
+        model.addAttribute(
+                "locations",
+                jobService.findDistinctLocations()
+        );
+
         return "home";
     }
 }

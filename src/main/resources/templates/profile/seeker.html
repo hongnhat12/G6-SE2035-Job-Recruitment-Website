@@ -1,113 +1,263 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('My Profile')}"></head>
+<head th:replace="~{fragments/head :: head('Candidate Profile')}"></head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
 
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 <div th:replace="~{fragments/flash :: flash}"></div>
 
-<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
-    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-        <!-- Header Banner -->
-        <div class="relative h-40 bg-gradient-to-r from-teal-500 to-teal-700 flex items-end px-10 pb-0">
-            <div class="absolute -bottom-16 left-10 w-32 h-32 rounded-full border-4 border-white shadow-xl bg-teal-50 flex items-center justify-center text-5xl font-bold text-teal-600 bg-white">
-                <span th:text="${profile.fullName.substring(0,1).toUpperCase()}">U</span>
-            </div>
+<main class="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
+    <div id="profile-header" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8 scroll-mt-24">
+        <div class="relative h-44 bg-gradient-to-r from-teal-500 via-teal-600 to-cyan-700">
+            <form id="avatarUploadForm" th:action="@{/profile/seeker/avatar}" method="POST" enctype="multipart/form-data"
+                  class="absolute -bottom-14 left-8 sm:left-12">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="relative group w-28 h-28">
+                    <div class="w-28 h-28 rounded-full border-4 border-white shadow-xl bg-white overflow-hidden flex items-center justify-center text-4xl font-bold text-teal-600">
+                        <img th:if="${profile.profileImage != null and !profile.profileImage.isBlank()}"
+                             th:src="${profile.profileImage}"
+                             alt="Candidate avatar"
+                             class="w-full h-full object-cover">
+                        <span th:unless="${profile.profileImage != null and !profile.profileImage.isBlank()}"
+                              th:text="${profile.fullName != null and !profile.fullName.isBlank() ? profile.fullName.substring(0,1).toUpperCase() : 'C'}">C</span>
+                    </div>
+
+                    <label for="avatarFile"
+                           class="absolute bottom-1 right-0 w-10 h-10 rounded-full border-4 border-white bg-teal-600 hover:bg-teal-700 text-white shadow-lg flex items-center justify-center cursor-pointer transition"
+                           title="Upload or replace avatar" aria-label="Upload or replace avatar">
+                        <i class="fa-solid fa-camera text-sm"></i>
+                    </label>
+                    <input id="avatarFile" type="file" name="avatarFile"
+                           accept="image/jpeg,image/png,.jpg,.jpeg,.png" class="hidden">
+                </div>
+            </form>
         </div>
+        <div class="pt-20 pb-7 px-8 sm:px-12">
+            <h1 class="text-3xl font-bold text-gray-900" th:text="${profile.fullName}">Candidate Name</h1>
+            <p class="text-gray-500 mt-1" th:text="${profile.headline != null and !profile.headline.isBlank() ? profile.headline : 'Complete your profile to attract recruiters'}">
+                Complete your profile to attract recruiters
+            </p>
+            <p class="text-xs text-gray-400 mt-2"><i class="fa-solid fa-camera mr-1"></i>Click the camera icon to upload or replace your avatar (JPG/PNG, maximum 2 MB).</p>
+            <p id="avatarClientError" class="text-sm text-red-600 font-medium mt-2 hidden"></p>
+        </div>
+    </div>
 
-        <form id="seekerForm"
-              th:action="@{/profile/seeker/update}"
-              method="POST" enctype="multipart/form-data"
-              class="p-8 pt-24 space-y-8">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <form id="candidateProfileForm" th:action="@{/profile/seeker/update}" method="POST" class="space-y-8">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-            <!-- Original values to check deletion via JS -->
-            <input type="hidden" id="orig_fullName" th:value="${profile.fullName}">
-            <input type="hidden" id="orig_phone" th:value="${profile.phone}">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- FullName -->
+        <!-- Personal Information -->
+        <section class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-100 flex items-center gap-4">
+                <div class="w-11 h-11 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <i class="fa-solid fa-user"></i>
+                </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Full Name *</label>
-                    <input type="text" name="fullName" id="fullName"
-                           th:value="${profile.fullName}" required
+                    <h2 class="text-xl font-bold text-gray-900">Personal Information</h2>
+                    <p class="text-sm text-gray-500">Basic information shown in your candidate profile</p>
+                </div>
+            </div>
+
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="fullName" class="block text-sm font-bold text-gray-700 mb-2">Full Name <span class="text-red-500">*</span></label>
+                    <input id="fullName" type="text" name="fullName" th:value="${profile.fullName}" required maxlength="100"
                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
                 </div>
-                <!-- Phone -->
+
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Phone Number *</label>
-                    <input type="text" name="phone" id="phone"
-                           th:value="${profile.phone}" required
-                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                    <label for="accountEmail" class="block text-sm font-bold text-gray-700 mb-2">Email</label>
+                    <input id="accountEmail" type="email" th:value="${accountEmail}" readonly
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed">
+                    <p class="text-xs text-gray-400 mt-1">Email is managed by your login account.</p>
                 </div>
-                <!-- Headline -->
+
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Job Title / Headline</label>
-                    <input type="text" name="headline" id="headline"
-                           th:value="${profile.headline}"
+                    <label for="phone" class="block text-sm font-bold text-gray-700 mb-2">Phone Number <span class="text-red-500">*</span></label>
+                    <input id="phone" type="text" name="phone" th:value="${profile.phone}" required maxlength="20"
+                           pattern="[0-9+()\s-]{8,20}"
                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                           placeholder="e.g. Java Developer / CS Student">
+                           placeholder="e.g. 0912-345-678">
                 </div>
-                <!-- Address -->
+
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Address</label>
-                    <input type="text" name="address" id="address"
-                           th:value="${profile.address}"
+                    <label for="birthday" class="block text-sm font-bold text-gray-700 mb-2">Birthday</label>
+                    <input id="birthday" type="date" name="birthday" th:value="${profile.birthday}"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label for="gender" class="block text-sm font-bold text-gray-700 mb-2">Gender</label>
+                    <select id="gender" name="gender"
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white">
+                        <option value="">Prefer not to say</option>
+                        <option value="Male" th:selected="${profile.gender == 'Male'}">Male</option>
+                        <option value="Female" th:selected="${profile.gender == 'Female'}">Female</option>
+                        <option value="Other" th:selected="${profile.gender == 'Other'}">Other</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="address" class="block text-sm font-bold text-gray-700 mb-2">Address</label>
+                    <input id="address" type="text" name="address" th:value="${profile.address}" maxlength="255"
                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                            placeholder="e.g. Hanoi, Vietnam">
                 </div>
-                <!-- CV Upload -->
+
+                <div class="md:col-span-2">
+                    <label for="headline" class="block text-sm font-bold text-gray-700 mb-2">Job Title / Headline</label>
+                    <input id="headline" type="text" name="headline" th:value="${profile.headline}" maxlength="255"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                           placeholder="e.g. Java Developer | 2 years of experience">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="summary" class="block text-sm font-bold text-gray-700 mb-2">Professional Summary</label>
+                    <textarea id="summary" name="summary" rows="5" maxlength="5000"
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                              placeholder="Introduce your strengths, career goals and professional background..."
+                              th:text="${profile.summary}"></textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills -->
+        <section class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-100 flex items-center gap-4">
+                <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <i class="fa-solid fa-code"></i>
+                </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Upload New Resume (PDF/Word)</label>
-                    <input type="file" name="cvFile" accept=".pdf,.doc,.docx"
-                           class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
-                    <div class="mt-2 text-xs text-gray-500" th:if="${cvList != null and cvList.size() > 0}">
-                        <p class="font-semibold text-teal-600 mb-1">Current Resumes:</p>
-                        <ul class="space-y-1">
-                            <li th:each="cv : ${cvList}">
-                                <a th:href="${cv.filePath}" target="_blank" class="hover:underline text-teal-600 font-medium" th:text="${cv.cvName}">CV</a>
-                                <span th:if="${cv.isDefault}" class="text-xs bg-teal-100 text-teal-800 px-2 py-0.5 rounded ml-1 font-bold">Default</span>
-                            </li>
-                        </ul>
+                    <h2 class="text-xl font-bold text-gray-900">Skills</h2>
+                    <p class="text-sm text-gray-500">Separate skills with commas so recruiters can read them easily</p>
+                </div>
+            </div>
+            <div class="p-8">
+                <label for="skills" class="block text-sm font-bold text-gray-700 mb-2">Technical and Professional Skills</label>
+                <textarea id="skills" name="skills" rows="3" maxlength="500"
+                          class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          placeholder="Java, Spring Boot, SQL Server, Git, Teamwork, English..."
+                          th:text="${profile.skills}"></textarea>
+            </div>
+        </section>
+
+        <!-- Experience and Education -->
+        <section class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-100 flex items-center gap-4">
+                <div class="w-11 h-11 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">Experience & Education</h2>
+                    <p class="text-sm text-gray-500">Describe the background that supports your application</p>
+                </div>
+            </div>
+
+            <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <label for="experience" class="block text-sm font-bold text-gray-700 mb-2">Work Experience</label>
+                    <textarea id="experience" name="experience" rows="10" maxlength="8000"
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:outline-none"
+                              placeholder="Example:&#10;Java Intern - ABC Company (06/2025 - 09/2025)&#10;- Developed REST APIs with Spring Boot&#10;- Worked with SQL Server and Git"
+                              th:text="${profile.experience}"></textarea>
+                </div>
+
+                <div>
+                    <label for="education" class="block text-sm font-bold text-gray-700 mb-2">Education</label>
+                    <textarea id="education" name="education" rows="10" maxlength="8000"
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:outline-none"
+                              placeholder="Example:&#10;FPT University (2023 - 2027)&#10;Major: Software Engineering&#10;GPA: 3.2/4.0"
+                              th:text="${profile.education}"></textarea>
+                </div>
+            </div>
+        </section>
+
+        <div class="flex justify-end gap-4">
+            <a th:href="@{/}" class="px-7 py-3 text-gray-600 font-bold hover:text-gray-900">Cancel</a>
+            <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-10 rounded-xl transition shadow-lg">
+                <i class="fa-solid fa-floppy-disk mr-2"></i>Save Candidate Profile
+            </button>
+        </div>
+    </form>
+
+    <!-- CV Management -->
+    <section id="cv-section" class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden mt-8 scroll-mt-24">
+        <div class="px-8 py-6 border-b border-gray-100 flex items-center gap-4">
+            <div class="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
+                <i class="fa-solid fa-file-pdf"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Upload / View CV</h2>
+                <p class="text-sm text-gray-500">Upload one current CV in PDF format, view it online or download it</p>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <div th:if="${currentCv != null}" class="rounded-2xl border border-teal-200 bg-teal-50 p-5 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex items-center gap-4 min-w-0">
+                    <div class="w-12 h-12 rounded-xl bg-white text-red-500 flex items-center justify-center shadow-sm flex-shrink-0">
+                        <i class="fa-solid fa-file-pdf text-2xl"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold uppercase tracking-wide text-teal-700">Current CV</p>
+                        <p class="font-bold text-gray-900 truncate" th:text="${currentCv.cvName}">candidate-cv.pdf</p>
+                        <p class="text-xs text-gray-500 mt-1" th:if="${currentCv.uploadedAt != null}">
+                            Uploaded: <span th:text="${currentCv.uploadedAt}">2026-07-20</span>
+                        </p>
                     </div>
                 </div>
-                <!-- Skills -->
-                <div class="col-span-1 md:col-span-2">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Skills (separated by commas)</label>
-                    <input type="text" name="skills" id="skills"
-                           th:value="${profile.skills}"
-                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                           placeholder="Java, Spring Boot, SQL, ReactJS...">
-                </div>
-                <!-- Summary -->
-                <div class="col-span-1 md:col-span-2">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Professional Summary</label>
-                    <textarea name="summary" id="summary" rows="4"
-                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                              placeholder="Briefly describe your experience, career goals, etc..." th:text="${profile.summary}"></textarea>
+
+                <div class="flex flex-wrap gap-3">
+                    <a th:href="@{/profile/seeker/cv/view}" target="_blank"
+                       class="px-5 py-2.5 rounded-xl bg-white border border-teal-200 text-teal-700 font-bold hover:bg-teal-100 transition">
+                        <i class="fa-solid fa-eye mr-2"></i>View CV
+                    </a>
+                    <a th:href="@{/profile/seeker/cv/download}"
+                       class="px-5 py-2.5 rounded-xl bg-teal-600 text-white font-bold hover:bg-teal-700 transition">
+                        <i class="fa-solid fa-download mr-2"></i>Download
+                    </a>
                 </div>
             </div>
 
-            <div class="flex justify-end space-x-4 pt-6 border-t border-gray-100">
-                <a th:href="@{/}" class="px-6 py-3 text-gray-600 font-bold hover:text-gray-900 mt-1">Cancel</a>
-                <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-10 rounded-xl transition shadow-lg">Save Changes</button>
+            <div th:unless="${currentCv != null}" class="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-7 mb-6 text-center">
+                <i class="fa-regular fa-file-pdf text-4xl text-gray-300"></i>
+                <p class="font-bold text-gray-700 mt-3">No CV uploaded yet</p>
+                <p class="text-sm text-gray-500 mt-1">Upload a PDF before applying for jobs.</p>
             </div>
-        </form>
-    </div>
+
+            <form id="cvUploadForm" th:action="@{/profile/seeker/cv}" method="POST" enctype="multipart/form-data"
+                  class="rounded-2xl border border-gray-200 p-6">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <label for="cvFile" class="block text-sm font-bold text-gray-700 mb-2"
+                       th:text="${currentCv != null ? 'Select a new PDF to replace the current CV' : 'Select a PDF CV'}">
+                    Select a PDF CV
+                </label>
+                <input id="cvFile" type="file" name="cvFile" accept="application/pdf,.pdf" required
+                       class="w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer">
+                <p class="text-xs text-gray-500 mt-2">PDF only. Maximum size: 5 MB. Uploading a new file makes it your current CV.</p>
+                <p id="cvClientError" class="text-sm text-red-600 font-medium mt-2 hidden"></p>
+
+                <div class="flex justify-end mt-5">
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-xl transition shadow-md">
+                        <i class="fa-solid fa-upload mr-2"></i>
+                        <span th:text="${currentCv != null ? 'Replace CV' : 'Upload CV'}">Upload CV</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
 
     <!-- Password Change Section -->
-    <div id="change-password" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mt-8">
+    <section id="change-password" class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden mt-8 scroll-mt-24">
         <div class="p-8">
             <div class="flex items-center gap-3 mb-6">
-                <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
+                <div class="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
+                    <i class="fa-solid fa-lock"></i>
                 </div>
                 <div>
-                    <h3 class="text-lg font-bold text-gray-900">Change Password</h3>
-                    <p class="text-sm text-gray-500">Update password to secure your account</p>
+                    <h2 class="text-xl font-bold text-gray-900">Change Password</h2>
+                    <p class="text-sm text-gray-500">Update your password to protect the account</p>
                 </div>
             </div>
 
@@ -115,21 +265,21 @@
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Current Password *</label>
+                    <label for="cp_current" class="block text-sm font-bold text-gray-700 mb-2">Current Password <span class="text-red-500">*</span></label>
                     <input type="password" name="currentPassword" id="cp_current" required
                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none text-sm"
                            placeholder="Enter current password">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">New Password *</label>
+                    <label for="cp_new" class="block text-sm font-bold text-gray-700 mb-2">New Password <span class="text-red-500">*</span></label>
                     <input type="password" name="newPassword" id="cp_new" required minlength="6"
                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none text-sm"
                            placeholder="Minimum 6 characters">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Confirm New Password *</label>
+                    <label for="cp_confirm" class="block text-sm font-bold text-gray-700 mb-2">Confirm New Password <span class="text-red-500">*</span></label>
                     <input type="password" name="confirmPassword" id="cp_confirm" required minlength="6"
                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none text-sm"
                            placeholder="Confirm new password">
@@ -143,54 +293,109 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 </main>
 
 <script>
 (function () {
-    var fields = [
-        { id: 'fullName',  origId: 'orig_fullName',  label: 'Full Name' },
-        { id: 'phone',     origId: 'orig_phone',     label: 'Phone Number' }
-    ];
+    var avatarForm = document.getElementById('avatarUploadForm');
+    var avatarInput = document.getElementById('avatarFile');
+    var avatarError = document.getElementById('avatarClientError');
 
-    document.getElementById('seekerForm').addEventListener('submit', function (e) {
-        for (var i = 0; i < fields.length; i++) {
-            var f = fields[i];
-            var origEl = document.getElementById(f.origId);
-            var newEl  = document.getElementById(f.id);
-            if (!origEl || !newEl) continue;
+    if (avatarForm && avatarInput && avatarError) {
+        avatarInput.addEventListener('change', function () {
+            avatarError.textContent = '';
+            avatarError.className = 'text-sm text-red-600 font-medium mt-2 hidden';
 
-            var origVal = origEl.value.trim();
-            var newVal  = newEl.value.trim();
-
-            if (origVal && !newVal) {
-                e.preventDefault();
-                alert(f.label + ' is already filled, deleting is not allowed!');
-                newEl.focus();
+            if (!avatarInput.files || avatarInput.files.length === 0) {
                 return;
             }
+
+            var file = avatarInput.files[0];
+            var validName = /\.(jpe?g|png)$/i.test(file.name);
+            var validType = file.type === 'image/jpeg' || file.type === 'image/png';
+
+            if (!validName || !validType) {
+                avatarInput.value = '';
+                avatarError.textContent = 'Only JPG or PNG images are accepted.';
+                avatarError.className = 'text-sm text-red-600 font-medium mt-2';
+                return;
+            }
+
+            if (file.size > 2 * 1024 * 1024) {
+                avatarInput.value = '';
+                avatarError.textContent = 'Avatar image must not exceed 2 MB.';
+                avatarError.className = 'text-sm text-red-600 font-medium mt-2';
+                return;
+            }
+
+            avatarForm.requestSubmit();
+        });
+    }
+
+    var birthday = document.getElementById('birthday');
+    if (birthday) {
+        birthday.max = new Date().toISOString().split('T')[0];
+    }
+
+    var cvForm = document.getElementById('cvUploadForm');
+    var cvInput = document.getElementById('cvFile');
+    var cvError = document.getElementById('cvClientError');
+    if (cvForm && cvInput && cvError) {
+        cvForm.addEventListener('submit', function (event) {
+            cvError.className = 'text-sm text-red-600 font-medium mt-2 hidden';
+            cvError.textContent = '';
+
+            if (!cvInput.files || cvInput.files.length === 0) {
+                event.preventDefault();
+                cvError.textContent = 'Please select a PDF file.';
+                cvError.className = 'text-sm text-red-600 font-medium mt-2';
+                return;
+            }
+
+            var file = cvInput.files[0];
+            var isPdfName = file.name.toLowerCase().endsWith('.pdf');
+            var isPdfType = !file.type || file.type === 'application/pdf';
+            if (!isPdfName || !isPdfType) {
+                event.preventDefault();
+                cvError.textContent = 'Only PDF files are accepted.';
+                cvError.className = 'text-sm text-red-600 font-medium mt-2';
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                event.preventDefault();
+                cvError.textContent = 'CV file must not exceed 5 MB.';
+                cvError.className = 'text-sm text-red-600 font-medium mt-2';
+            }
+        });
+    }
+
+    var newPassword = document.getElementById('cp_new');
+    var confirmPassword = document.getElementById('cp_confirm');
+    var matchMessage = document.getElementById('cp_matchMsg');
+
+    function checkPasswords() {
+        if (!confirmPassword.value) {
+            matchMessage.className = 'text-xs mt-1 hidden';
+            return;
         }
-    });
-
-    var np = document.getElementById('cp_new');
-    var cp = document.getElementById('cp_confirm');
-    var msg = document.getElementById('cp_matchMsg');
-
-    function check() {
-        if (!cp.value) { msg.className = 'text-xs mt-1 hidden'; return; }
-        if (np.value === cp.value) {
-            msg.textContent = '✓ Passwords match';
-            msg.className = 'text-xs mt-1 text-green-600';
+        if (newPassword.value === confirmPassword.value) {
+            matchMessage.textContent = '✓ Passwords match';
+            matchMessage.className = 'text-xs mt-1 text-green-600';
         } else {
-            msg.textContent = '✗ Passwords do not match';
-            msg.className = 'text-xs mt-1 text-red-600';
+            matchMessage.textContent = '✗ Passwords do not match';
+            matchMessage.className = 'text-xs mt-1 text-red-600';
         }
     }
-    if (np && cp) { np.addEventListener('input', check); cp.addEventListener('input', check); }
+
+    if (newPassword && confirmPassword && matchMessage) {
+        newPassword.addEventListener('input', checkPasswords);
+        confirmPassword.addEventListener('input', checkPasswords);
+    }
 })();
 </script>
 
 <footer th:replace="~{fragments/footer :: footer}"></footer>
-
 </body>
 </html>

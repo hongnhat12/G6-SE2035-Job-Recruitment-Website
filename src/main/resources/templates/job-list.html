@@ -24,9 +24,6 @@
                 <h1 class="text-4xl font-extrabold text-white mb-6 text-center">Search Jobs</h1>
                 
                 <form th:action="@{/jobs}" method="GET" class="max-w-4xl mx-auto bg-white p-3 rounded-2xl shadow-2xl flex gap-3">
-                    <input type="hidden" name="industry" th:value="${industry}">
-                    <input type="hidden" name="employmentType" th:value="${employmentType}">
-                    <input type="hidden" name="size" th:value="${size}">
                     <input type="text" name="keyword" th:value="${keyword}" placeholder="Position, skills, company..." class="flex-grow px-4 py-3 focus:outline-none text-gray-800 text-sm">
                     <select name="location" class="px-4 py-3 border-l border-gray-100 bg-white text-gray-700 text-sm focus:outline-none">
                         <option value="">All Locations</option>
@@ -43,7 +40,6 @@
                 <aside class="lg:w-72 flex-shrink-0">
                     <form th:action="@{/jobs}" method="GET" class="space-y-6 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                         <input type="hidden" name="keyword" th:value="${keyword}">
-                        <input type="hidden" name="size" th:value="${size}">
                         <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3">Search Filters</h3>
                         
                         <div>
@@ -128,7 +124,7 @@
                     <!-- Pagination -->
                     <div th:if="${totalPages > 1}" class="flex justify-center mt-10 space-x-2">
                         <a th:each="p : ${#numbers.sequence(0, totalPages - 1)}"
-                           th:href="@{/jobs(keyword=${keyword},industry=${industry},location=${location},employmentType=${employmentType},size=${size},page=${p})}"
+                           th:href="@{/jobs(keyword=${keyword},industry=${industry},location=${location},employmentType=${employmentType},page=${p})}"
                            th:class="${p == currentPage ? 'w-10 h-10 flex items-center justify-center rounded-xl bg-teal-600 text-white font-bold' : 'w-10 h-10 flex items-center justify-center rounded-xl bg-white text-gray-600 border border-gray-200 hover:border-teal-400 hover:text-teal-600'} + ' transition text-sm'"
                            th:text="${p + 1}">
                             1
