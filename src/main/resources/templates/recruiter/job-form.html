@@ -18,7 +18,7 @@
         <span id="validationMsg"></span>
     </div>
 
-    <form id="jobForm" th:action="${job.getClass().getSimpleName() == 'Job'} ? @{/jobs/edit/{id}(id=${job.jobId})} : @{/jobs/create}" method="POST"
+    <form id="jobForm" th:action="${job.getClass().getSimpleName() == 'Job'} ? @{/jobs/edit/{id}(id=${job.jobId})} : @{/recruiter/jobs/create}" method="POST"
           class="p-8 space-y-8" onsubmit="return validateForm()">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
@@ -121,7 +121,7 @@
         </div>
 
         <div class="flex justify-end space-x-4 pt-6 border-t border-gray-100">
-            <a th:href="@{recruiter/jobs/manage}" class="px-6 py-3 text-gray-600 font-bold hover:text-gray-900 transition mt-2">Cancel</a>
+            <a th:href="@{/recruiter/jobs}" class="px-6 py-3 text-gray-600 font-bold hover:text-gray-900 transition mt-2">Cancel</a>
             <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-10 rounded-xl transition shadow-lg transform hover:-translate-y-1"
                     th:text="${job.getClass().getSimpleName() == 'Job' ? 'Save Changes' : 'Post Job'}">
                 Post Job

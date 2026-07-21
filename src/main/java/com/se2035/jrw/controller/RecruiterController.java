@@ -4,6 +4,8 @@ import com.se2035.jrw.dto.JobRequest;
 import com.se2035.jrw.dto.RecruiterDashboardDTO;
 import com.se2035.jrw.entity.*;
 import com.se2035.jrw.service.*;
+import com.se2035.jrw.exception.BadRequestException;
+import com.se2035.jrw.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -161,19 +163,41 @@ public class RecruiterController {
     @PostMapping("/applications/status")
     public String updateApplicationStatus(@RequestParam Integer applicationId,
                                           @RequestParam String status,
+                                          @RequestHeader(value = "Referer", required = false) String referer,
                                           Authentication auth,
                                           RedirectAttributes redirectAttributes) {
         Recruiter recruiter = getCurrentRecruiter(auth);
-        switch (status.toUpperCase()) {
-            case "SHORTLISTED" -> applicationService.shortlist(applicationId, recruiter.getRecruiterId());
-            case "REJECTED" -> applicationService.reject(applicationId, recruiter.getRecruiterId());
-            case "HIRED" -> applicationService.hire(applicationId, recruiter.getRecruiterId());
-            default -> {
-                redirectAttributes.addFlashAttribute("error", "Invalid status value.");
-                return "redirect:/recruiter/applications";
+        
+        String redirectUrl = "redirect:/recruiter/applications";
+        if (referer != null && referer.contains("/recruiter/applications")) {
+            try {
+                java.net.URI uri = new java.net.URI(referer);
+                String path = uri.getPath();
+                if (uri.getQuery() != null) {
+                    path += "?" + uri.getQuery();
+                }
+                if (path != null && path.contains("/recruiter/applications")) {
+                    redirectUrl = "redirect:" + path;
+                }
+            } catch (Exception e) {
+                // Keep default redirectUrl on parsing failure
             }
         }
-        redirectAttributes.addFlashAttribute("success", "Application status updated successfully.");
-        return "redirect:/recruiter/applications";
+
+        try {
+            switch (status.toUpperCase()) {
+                case "SHORTLISTED" -> applicationService.shortlist(applicationId, recruiter.getRecruiterId());
+                case "REJECTED" -> applicationService.reject(applicationId, recruiter.getRecruiterId());
+                case "HIRED" -> applicationService.hire(applicationId, recruiter.getRecruiterId());
+                default -> {
+                    redirectAttributes.addFlashAttribute("error", "Invalid status value.");
+                    return redirectUrl;
+                }
+            }
+            redirectAttributes.addFlashAttribute("success", "Application status updated successfully.");
+        } catch (BadRequestException | ResourceNotFoundException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return redirectUrl;
     }
 }
