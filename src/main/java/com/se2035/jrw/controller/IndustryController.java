@@ -87,7 +87,7 @@ public class IndustryController {
         return "redirect:/admin/industries";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String deleteIndustry(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
         try {
             industryService.deleteIndustryById(id);

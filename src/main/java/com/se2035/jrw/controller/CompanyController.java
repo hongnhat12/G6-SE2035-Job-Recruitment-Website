@@ -104,7 +104,7 @@ public class CompanyController {
         return "redirect:/admin/companies";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String deleteCompany(@PathVariable("id") Integer id, RedirectAttributes redirectAttributes) {
         try {
             companyService.deleteCompanyById(id);

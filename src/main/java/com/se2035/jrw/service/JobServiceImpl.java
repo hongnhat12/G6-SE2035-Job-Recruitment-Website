@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,6 +59,9 @@ public class JobServiceImpl implements JobService{
         if(req.getSalaryMin() != null && req.getSalaryMax() != null
                 && req.getSalaryMin().compareTo(req.getSalaryMax()) > 0) {
                 throw new BadRequestException("Salary min > max");
+        }
+        if(req.getDeadline() != null && req.getDeadline().isBefore(LocalDate.now())) {
+            throw new BadRequestException("Deadline cannot be in the past");
         }
 
         Job job = Job.builder()
@@ -95,6 +99,9 @@ public class JobServiceImpl implements JobService{
                 && req.getSalaryMin().compareTo(req.getSalaryMax()) > 0) {
             throw new BadRequestException("Salary min > max");
         }
+        if(req.getDeadline() != null && req.getDeadline().isBefore(LocalDate.now())) {
+            throw new BadRequestException("Deadline cannot be in the past");
+        }
         Industry industry = industryRepo.findById(req.getIndustryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Industry not found"));
 
@@ -113,6 +120,8 @@ public class JobServiceImpl implements JobService{
         job.setStatus(JobStatus.PENDING);
         job.setApprovedBy(null);
         job.setApprovedAt(null);
+        job.setRejectedBy(null);
+        job.setRejectedAt(null);
 
         return jobRepo.save(job);
     }
@@ -158,6 +167,8 @@ public class JobServiceImpl implements JobService{
         job.setStatus(JobStatus.APPROVED);
         job.setApprovedBy(adminUser);
         job.setApprovedAt(LocalDateTime.now());
+        job.setRejectedBy(null);
+        job.setRejectedAt(null);
 
         return jobRepo.save(job);
     }
@@ -173,8 +184,10 @@ public class JobServiceImpl implements JobService{
         }
 
         job.setStatus(JobStatus.REJECTED);
-        job.setApprovedBy(adminUser);
-        job.setApprovedAt(LocalDateTime.now());
+        job.setRejectedBy(adminUser);
+        job.setRejectedAt(LocalDateTime.now());
+        job.setApprovedBy(null);
+        job.setApprovedAt(null);
 
         return jobRepo.save(job);
     }
@@ -200,5 +213,53 @@ public class JobServiceImpl implements JobService{
         return jobRepo.findByRecruiterRecruiterIdAndStatusNot(
                 recruiter.getRecruiterId(),
                 JobStatus.DELETED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Job> findLatestJobs() {
+        return jobRepo.findTop8ByStatusOrderByCreatedAtDesc(JobStatus.APPROVED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Job> findHottestJobs() {
+        return jobRepo.findTop8ByStatusOrderBySalaryMaxDesc(JobStatus.APPROVED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> findDistinctLocations() {
+        return jobRepo.findDistinctLocations(JobStatus.APPROVED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> findDistinctEmploymentTypes() {
+        return jobRepo.findDistinctEmploymentTypes(JobStatus.APPROVED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> findDistinctIndustries() {
+        return jobRepo.findDistinctIndustries(JobStatus.APPROVED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Job> searchApprovedJobs(String keyword, String location, String employmentType, String industry, Pageable pageable) {
+        return jobRepo.searchApprovedJobs(JobStatus.APPROVED, keyword, location, employmentType, industry, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Job> findJobDetailWithAssociations(Integer id) {
+        return jobRepo.findJobDetailWithAssociations(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Job> findJobsByStatus(JobStatus status, Pageable pageable) {
+        return jobRepo.findByStatus(status, pageable);
     }
 }

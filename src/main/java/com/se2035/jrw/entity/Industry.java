@@ -24,7 +24,7 @@ public class Industry {
     @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
-    @OneToMany(mappedBy = "industry", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "industry", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Job> jobs = new ArrayList<>();
 }

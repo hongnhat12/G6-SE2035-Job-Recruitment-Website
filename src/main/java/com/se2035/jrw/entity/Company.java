@@ -43,11 +43,11 @@ public class Company {
     @Builder.Default
     private String status = "ACTIVE";
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Recruiter> recruiters = new ArrayList<>();
 
-    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Job> jobs = new ArrayList<>();
 }

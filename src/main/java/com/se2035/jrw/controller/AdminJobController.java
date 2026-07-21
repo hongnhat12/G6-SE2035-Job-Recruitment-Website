@@ -31,18 +31,23 @@ public class AdminJobController {
 
     @GetMapping("/pending")
     public String listPendingJobs(
+            @RequestParam(value = "status", required = false) com.se2035.jrw.enums.JobStatus status,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "5") int size,
             Model model) {
 
-        Page<Job> pendingPage = jobService.findPendingJobs(
+        com.se2035.jrw.enums.JobStatus selectedStatus = (status != null) ? status : com.se2035.jrw.enums.JobStatus.PENDING;
+
+        Page<Job> jobPage = jobService.findJobsByStatus(
+                selectedStatus,
                 PageRequest.of(page, size, Sort.by("createdAt").descending())
         );
 
-        model.addAttribute("jobs", pendingPage.getContent());
+        model.addAttribute("jobs", jobPage.getContent());
         model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", pendingPage.getTotalPages());
-        model.addAttribute("totalItems", pendingPage.getTotalElements());
+        model.addAttribute("totalPages", jobPage.getTotalPages());
+        model.addAttribute("totalItems", jobPage.getTotalElements());
+        model.addAttribute("selectedStatus", selectedStatus);
 
         return "admin/job/pending-list";
     }

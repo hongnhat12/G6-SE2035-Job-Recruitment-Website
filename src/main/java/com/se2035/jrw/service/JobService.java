@@ -4,6 +4,7 @@ import com.se2035.jrw.dto.JobRequest;
 import com.se2035.jrw.entity.Job;
 import com.se2035.jrw.entity.Recruiter;
 import com.se2035.jrw.entity.User;
+import com.se2035.jrw.enums.JobStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -32,4 +33,20 @@ public interface JobService {
     Job findById(Integer id);
 
     List<Job> getMyJobs(Recruiter recruiter);
+
+    List<Job> findLatestJobs();
+
+    List<Job> findHottestJobs();
+
+    List<String> findDistinctLocations();
+
+    List<String> findDistinctEmploymentTypes();
+
+    List<String> findDistinctIndustries();
+
+    Page<Job> searchApprovedJobs(String keyword, String location, String employmentType, String industry, Pageable pageable);
+
+    Optional<Job> findJobDetailWithAssociations(Integer id);
+
+    Page<Job> findJobsByStatus(JobStatus status, Pageable pageable);
 }

@@ -82,6 +82,13 @@ public class Job {
     @Column(name = "ApprovedAt")
     private LocalDateTime approvedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "RejectedBy")
+    private User rejectedBy;
+
+    @Column(name = "RejectedAt")
+    private LocalDateTime rejectedAt;
+
     @CreationTimestamp
     @Column(name = "CreatedAt", updatable = false)
     private LocalDateTime createdAt;

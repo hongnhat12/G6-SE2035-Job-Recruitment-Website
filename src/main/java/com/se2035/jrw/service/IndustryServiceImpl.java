@@ -44,10 +44,13 @@ public class IndustryServiceImpl implements IndustryService {
 
     @Override
     public void saveIndustry(IndustryRequest industryRequest) {
-        Optional<Industry> foundIndustry = industryRepo.findByIndustryName(industryRequest.getIndustryName());
+        String trimmedName = industryRequest.getIndustryName().trim();
+        industryRequest.setIndustryName(trimmedName);
+
+        Optional<Industry> foundIndustry = industryRepo.findByIndustryNameIgnoreCase(industryRequest.getIndustryName());
         if (foundIndustry.isPresent()) {
             if (industryRequest.getIndustryId() == null || !foundIndustry.get().getIndustryId().equals(industryRequest.getIndustryId())) {
-                throw new BadRequestException("Industry name " + industryRequest.getIndustryName() + " existing");
+                throw new BadRequestException("Industry name '" + industryRequest.getIndustryName() + "' already exists!");
             }
         }
         Industry industry;
@@ -66,9 +69,11 @@ public class IndustryServiceImpl implements IndustryService {
 
     @Override
     public void deleteIndustryById(Integer id) {
-        if (!industryRepo.existsById(id)) {
-            throw new ResourceNotFoundException("Cannot delete. Industry not found with ID: " + id);
+        Industry industry = industryRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cannot delete. Industry not found with ID: " + id));
+        if (industry.getJobs() != null && !industry.getJobs().isEmpty()) {
+            throw new BadRequestException("Cannot delete industry '" + industry.getIndustryName() + "' because it has associated job postings.");
         }
-        industryRepo.deleteById(id);
+        industryRepo.delete(industry);
     }
 }

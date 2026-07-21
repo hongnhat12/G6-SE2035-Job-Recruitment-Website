@@ -34,10 +34,18 @@
 
         <div class="col-span-1 lg:col-span-3 space-y-6">
             <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-                <div class="border-b border-gray-100 py-6 px-8 flex justify-between items-center">
+                <div class="border-b border-gray-100 py-6 px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">Job Approvals</h1>
                         <p class="text-sm text-gray-500 mt-1">Review and approve pending job listings</p>
+                    </div>
+                    <div class="flex items-center space-x-3 bg-gray-50 p-2.5 rounded-2xl border border-gray-100">
+                        <label for="statusFilter" class="text-xs font-bold text-gray-500 uppercase tracking-wider pl-2">Status:</label>
+                        <select id="statusFilter" onchange="filterByStatus(this.value)" class="rounded-xl border-gray-200 text-sm font-medium text-gray-700 focus:ring-teal-500 focus:border-teal-500 py-1.5 px-3 bg-white border">
+                            <option value="PENDING" th:selected="${selectedStatus.name() == 'PENDING'}">Pending</option>
+                            <option value="APPROVED" th:selected="${selectedStatus.name() == 'APPROVED'}">Approved</option>
+                            <option value="REJECTED" th:selected="${selectedStatus.name() == 'REJECTED'}">Rejected</option>
+                        </select>
                     </div>
                 </div>
 
@@ -50,6 +58,7 @@
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Company</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Salary ($)</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Deadline</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                         </thead>
@@ -74,25 +83,37 @@
                                 <span th:unless="${job.salaryMin != null and job.salaryMax != null}" class="text-gray-400">Negotiable</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${job.deadline}">2026-07-31</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span th:if="${job.status.name() == 'PENDING'}" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-50 text-yellow-700 border border-yellow-200">
+                                    <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-yellow-400"></span> Pending
+                                </span>
+                                <span th:if="${job.status.name() == 'APPROVED'}" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200">
+                                    <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-teal-500"></span> Approved
+                                </span>
+                                <span th:if="${job.status.name() == 'REJECTED'}" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200">
+                                    <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-red-500"></span> Rejected
+                                </span>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                                 <button type="button"
+                                 <button th:if="${job.status.name() == 'PENDING'}" type="button"
                                          th:data-id="${job.jobId}" th:data-title="${job.title}" th:data-company="${job.company.companyName}"
                                          onclick="openApproveModal(this)"
                                          class="bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 py-1.5 px-3 rounded-lg text-xs font-bold transition inline-flex items-center">
                                      <i class="fa-solid fa-check mr-1"></i> Approve
                                  </button>
-                                 <button type="button"
+                                 <button th:if="${job.status.name() == 'PENDING'}" type="button"
                                          th:data-id="${job.jobId}" th:data-title="${job.title}" th:data-company="${job.company.companyName}"
                                          onclick="openRejectModal(this)"
                                          class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 py-1.5 px-3 rounded-lg text-xs font-bold transition inline-flex items-center">
                                      <i class="fa-solid fa-xmark mr-1"></i> Reject
                                  </button>
+                                 <span th:unless="${job.status.name() == 'PENDING'}" class="text-xs text-gray-400 font-medium italic">No actions available</span>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(jobs)}">
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-400 text-sm">
+                            <td colspan="7" class="px-6 py-12 text-center text-gray-400 text-sm">
                                 <i class="fa-solid fa-inbox text-3xl mb-3 block"></i>
-                                <div>No pending job postings found</div>
+                                <div th:text="'No ' + ${#strings.toLowerCase(selectedStatus)} + ' job postings found'">No pending job postings found</div>
                             </td>
                         </tr>
                         </tbody>
@@ -101,21 +122,21 @@
 
                 <div th:if="${totalPages > 0}" class="border-t border-gray-100 py-5 px-8 flex justify-between items-center bg-gray-50">
                     <p class="text-sm text-gray-500">
-                        Total pending job postings: <strong class="text-gray-900" th:text="${totalItems}">0</strong>
+                        Total job postings: <strong class="text-gray-900" th:text="${totalItems}">0</strong>
                     </p>
                     <nav class="flex space-x-1">
-                        <a th:if="${currentPage > 0}" th:href="@{/admin/jobs/pending(page=${currentPage - 1})}"
+                        <a th:if="${currentPage > 0}" th:href="@{/admin/jobs/pending(page=${currentPage - 1}, status=${selectedStatus})}"
                            class="px-3 py-1.5 border border-gray-200 bg-white text-gray-600 rounded-lg hover:border-teal-400 hover:text-teal-600 transition text-xs font-medium">
                             Previous
                         </a>
                         <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-                            <a th:href="@{/admin/jobs/pending(page=${i})}"
+                            <a th:href="@{/admin/jobs/pending(page=${i}, status=${selectedStatus})}"
                                th:class="${currentPage == i ? 'bg-teal-600 border-teal-600 text-white font-bold' : 'bg-white border-gray-200 text-gray-600 hover:border-teal-400 hover:text-teal-600'} + ' px-3.5 py-1.5 border rounded-lg transition text-xs font-medium'"
                                th:text="${i + 1}">
                                 1
                             </a>
                         </span>
-                        <a th:if="${currentPage < totalPages - 1}" th:href="@{/admin/jobs/pending(page=${currentPage + 1})}"
+                        <a th:if="${currentPage < totalPages - 1}" th:href="@{/admin/jobs/pending(page=${currentPage + 1}, status=${selectedStatus})}"
                            class="px-3 py-1.5 border border-gray-200 bg-white text-gray-600 rounded-lg hover:border-teal-400 hover:text-teal-600 transition text-xs font-medium">
                             Next
                         </a>
@@ -213,6 +234,9 @@
 
     function closeRejectModal() {
         document.getElementById('rejectModal').classList.add('hidden');
+    }
+    function filterByStatus(status) {
+        window.location.href = '/admin/jobs/pending?status=' + status;
     }
 </script>
 

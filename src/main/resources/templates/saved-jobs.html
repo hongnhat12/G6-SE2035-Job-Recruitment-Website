@@ -22,7 +22,7 @@
             <div th:each="saved : ${savedJobs.content}" class="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-xl transition group flex flex-col">
                 <div class="flex items-start justify-between mb-4">
                     <div class="w-14 h-14 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center p-2 flex-shrink-0">
-                        <img th:src="${saved.job.company != null and saved.job.company.logo != null ? saved.job.logo : 'https://via.placeholder.com/100'}" alt="logo" class="max-w-full max-h-full object-contain">
+                        <img th:src="${saved.job.company != null and saved.job.company.logo != null ? saved.job.company.logo : 'https://via.placeholder.com/100'}" alt="logo" class="max-w-full max-h-full object-contain">
                     </div>
                     <span class="bg-teal-50 text-teal-600 text-xs font-bold px-3 py-1 rounded-full uppercase" th:text="${saved.job.employmentType}">Type</span>
                 </div>

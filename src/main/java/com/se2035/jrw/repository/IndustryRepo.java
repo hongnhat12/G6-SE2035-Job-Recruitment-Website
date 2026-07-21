@@ -9,5 +9,7 @@ import java.util.Optional;
 public interface IndustryRepo extends JpaRepository<Industry, Integer> {
     Optional<Industry> findByIndustryName(String industryName);
 
+    Optional<Industry> findByIndustryNameIgnoreCase(String industryName);
+
     Page<Industry> findByIndustryNameContainingIgnoreCase(String industryName, Pageable pageable);
 }

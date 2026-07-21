@@ -75,9 +75,14 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public void deleteCompanyById(Integer id) {
-        if (!companyRepo.existsById(id)) {
-            throw new ResourceNotFoundException("Cannot delete. Company not found with ID: " + id);
+        Company company = companyRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cannot delete. Company not found with ID: " + id));
+        if (company.getRecruiters() != null && !company.getRecruiters().isEmpty()) {
+            throw new BadRequestException("Cannot delete company '" + company.getCompanyName() + "' because it has associated recruiters.");
         }
-        companyRepo.deleteById(id);
+        if (company.getJobs() != null && !company.getJobs().isEmpty()) {
+            throw new BadRequestException("Cannot delete company '" + company.getCompanyName() + "' because it has associated job postings.");
+        }
+        companyRepo.delete(company);
     }
 }
