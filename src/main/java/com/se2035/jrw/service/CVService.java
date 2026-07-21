@@ -8,9 +8,14 @@ import java.util.Optional;
 
 public interface CVService {
 
+
     Optional<CV> getCurrentCv(Integer candidateId);
 
-    CV uploadOrReplaceCurrentCv(Integer candidateId, MultipartFile file);
+
+    CV uploadOrReplaceCurrentCv(
+            Integer candidateId,
+            MultipartFile file
+    );
 
     Resource loadCvResource(CV cv);
 }

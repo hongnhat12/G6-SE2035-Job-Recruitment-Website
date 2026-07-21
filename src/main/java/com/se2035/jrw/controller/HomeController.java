@@ -1,7 +1,6 @@
 package com.se2035.jrw.controller;
 
-import com.se2035.jrw.enums.JobStatus;
-import com.se2035.jrw.repository.JobRepo;
+import com.se2035.jrw.service.JobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,13 +10,25 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequiredArgsConstructor
 public class HomeController {
 
-    private final JobRepo jobRepo;
+    private final JobService jobService;
 
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("latestJobs", jobRepo.findTop8ByStatusOrderByCreatedAtDesc(JobStatus.APPROVED));
-        model.addAttribute("hottestJobs", jobRepo.findTop8ByStatusOrderBySalaryMaxDesc(JobStatus.APPROVED));
-        model.addAttribute("locations", jobRepo.findDistinctLocations(JobStatus.APPROVED));
+        model.addAttribute(
+                "latestJobs",
+                jobService.findLatestJobs()
+        );
+
+        model.addAttribute(
+                "hottestJobs",
+                jobService.findHottestJobs()
+        );
+
+        model.addAttribute(
+                "locations",
+                jobService.findDistinctLocations()
+        );
+
         return "home";
     }
 }
